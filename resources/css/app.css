@@ -1,0 +1,94 @@
+@import "tailwindcss";
+@import "sweetalert2/dist/sweetalert2.min.css";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --color-primary: #154273;
+    --color-primary-light: #2b8af8;
+    --color-natural: #dfd4d4;
+    --font-sans: "Inter", sans-serif;
+}
+
+
+.featured-subjects-carousel-wrapper .swiper-button-next,
+.featured-subjects-carousel-wrapper .swiper-button-prev,
+.recent-publications-carousel-wrapper .swiper-button-next,
+.recent-publications-carousel-wrapper .swiper-button-prev {
+    background-color: #1e3a8a;
+    width: 44px !important;
+    height: 44px !important;
+    top: 50%;
+    margin-top: -22px;
+    border-radius: 9999px;
+    color: white !important;
+    box-shadow:
+            0 4px 6px -1px rgb(0 0 0 / 0.1),
+            0 2px 4px -2px rgb(0 0 0 / 0.1);
+    transition: background-color 0.3s;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: #1c3473;
+}
+
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    font-size: 18px !important;
+    font-weight: 900;
+}
+
+.swiper-button-prev {
+    left: -22px;
+}
+
+.swiper-button-next {
+    right: -22px;
+}
+
+@media (max-width: 768px) {
+    .swiper-button-prev {
+        left: 10px;
+    }
+    .swiper-button-next {
+        right: 10px;
+    }
+}
+
+.swiper-slide {
+    height: auto;
+    display: flex;
+}
+
+[x-cloak] {
+    display: none;
+}
+/* Swiper Kart Yüksekliği Eşitleme Çözümü (@apply ile) */
+.uitgelichte-publicaties .swiper-wrapper {
+    @apply items-stretch;
+}
+
+.uitgelichte-publicaties .swiper-slide {
+    @apply flex flex-col h-auto;
+}
+
+.uitgelichte-publicaties .swiper-slide > div {
+    @apply h-full w-full;
+}
+
+/* Swiper Kart Yüksekliği Eşitleme Çözümü (Recent Publications) */
+.recent-publications-slider .swiper-wrapper {
+    @apply items-stretch;
+}
+
+.recent-publications-slider .swiper-slide {
+    @apply flex flex-col h-auto;
+}
+
+.recent-publications-slider .swiper-slide > div {
+    @apply h-full w-full;
+}

@@ -1,13 +1,11 @@
 <header class="bg-white border-b border-gray-200 px-6 py-4">
     <div class="flex items-center justify-between">
-        {{-- Left Section: Breadcrumb --}}
+        {{-- Left Section: Title --}}
         <div class="flex items-center">
-            {{-- Simple Breadcrumb --}}
-            <nav class="flex items-center text-sm">
-                <a href="#" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">Home</a>
-                <i class="fa-solid fa-chevron-right text-gray-300 mx-2 text-xs"></i>
-                <span class="text-gray-900 font-medium">Dashboard</span>
-            </nav>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p class="text-sm text-gray-600 mt-1">Overzicht van Project Woo-voorziening</p>
+            </div>
         </div>
 
         {{-- Center Section: Search & Quick Actions --}}
@@ -127,7 +125,39 @@
                 </div>
             </div>
 
-
+            {{-- New Item Button --}}
+            <div x-data="{ dropdownOpen: false }" class="relative">
+                <button @click="dropdownOpen = !dropdownOpen" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    + Nieuw item
+                </button>
+                
+                <div x-show="dropdownOpen" @click.away="dropdownOpen = false" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-75"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                    <a href="{{ route('admin.businessdoelen.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-bullseye mr-2"></i>
+                        Nieuw Businessdoel
+                    </a>
+                    <a href="{{ route('admin.mijn-taken.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-clipboard-list mr-2"></i>
+                        Nieuwe Taak
+                    </a>
+                    <a href="{{ route('admin.risicos-knelpunten.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Nieuw Risico/Knelpunt
+                    </a>
+                    <a href="{{ route('admin.rapportages.create') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Nieuwe Rapportage
+                    </a>
+                </div>
+            </div>
         </div>
 
         {{-- Right Section: Notifications & Profile --}}
@@ -225,7 +255,7 @@
 
                     {{-- Logout --}}
                     <div class="border-t border-gray-100 mt-1 pt-1">
-                        <form method="POST" action="#" class="w-full">
+                        <form method="POST" action="{{ route('admin.logout') }}" class="w-full">
                             @csrf
                             <button type="submit" class="w-full flex items-center px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200">
                                 <i class="fa-solid fa-sign-out-alt mr-3 text-red-500 w-4"></i>

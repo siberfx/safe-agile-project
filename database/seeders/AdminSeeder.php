@@ -19,11 +19,14 @@ class AdminSeeder extends Seeder
         }
 
         foreach (Variable::DEFAULT_SA_EMAILS as $data) {
-            User::query()->create([
+            $user = User::query()->create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
             ]);
+
+            // Assign super_admin role
+            $user->assignRole(Variable::SUPER_ADMIN_ROLE);
         }
     }
 }

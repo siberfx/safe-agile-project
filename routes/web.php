@@ -91,6 +91,18 @@ Route::group(['as' => 'admin.'], function () {
             Route::post('/2fa/recovery-codes', [ProfileController::class, 'generateRecoveryCodes'])->name('2fa.recovery-codes');
         });
 
+        // Businessdoelen routes
+        Route::resource('businessdoelen', App\Http\Controllers\Admin\BusinessdoelenController::class);
+
+        // Mijn Taken routes
+        Route::resource('mijn-taken', App\Http\Controllers\Admin\MijnTakenController::class);
+
+        // Risico's & Knelpunten routes
+        Route::resource('risicos-knelpunten', App\Http\Controllers\Admin\RisicosKnelpuntenController::class);
+
+        // Rapportages routes
+        Route::resource('rapportages', App\Http\Controllers\Admin\RapportagesController::class);
+
         // Access Management routes
         Route::group(['prefix' => 'access', 'as' => 'access.'], function () {
             // Users routes

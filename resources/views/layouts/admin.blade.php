@@ -19,11 +19,11 @@
 <body class="bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/30 text-gray-900 font-sans">
 <div class="min-h-screen flex">
     {{-- Sidebar --}}
-    <x-system.sidebar />
+    <x-admin.sidebar />
     {{-- Main Content --}}
     <div class="flex-1 bg-transparent">
         {{-- Header --}}
-        <x-system.header />
+        <x-admin.header />
         {{-- Content --}}
         <main class="p-6">
             @yield('content')

@@ -23,121 +23,68 @@ class Sidebar extends Component
     {
         $sidebarMenus = [
             [
-                'title' => 'MAIN MENU',
+                'title' => 'PROGRAMMA CONTEXT',
                 'items' => [
                     [
-                        'name' => 'Dashboard',
-                        'icon' => 'fa-chart-line',
-                        'route' => 'admin.index',
-                        'isActive' => request()->routeIs('admin.index'),
-                    ],
-                    [
-                        'name' => 'Comments',
-                        'icon' => 'fa-comments',
+                        'name' => 'Programma Open Overheid',
+                        'icon' => 'fa-chevron-down',
                         'route' => '#',
                         'hasSubmenu' => true,
+                        'isSubmenuOpen' => false,
                         'submenu' => [
                             [
-                                'name' => 'All Comments',
-                                'icon' => 'fa-comment',
+                                'name' => 'Subprogramma 1',
+                                'icon' => 'fa-circle',
+                                'route' => '#',
+                                'isActive' => false,
+                            ],
+                            [
+                                'name' => 'Subprogramma 2',
+                                'icon' => 'fa-circle',
                                 'route' => '#',
                                 'isActive' => false,
                             ],
                         ],
                     ],
-
+                ],
+            ],
+            [
+                'title' => 'MIJN WERK',
+                'items' => [
                     [
-                        'name' => 'Settings',
-                        'icon' => 'fa-gear',
-                        'route' => '#',
-                        'hasSubmenu' => true,
-                        'isSubmenuOpen' => request()->routeIs('admin.menu-builder.*') || request()->routeIs('admin.access.*'),
-                        'submenu' => [
-                            [
-                                'name' => 'Menu Builder',
-                                'icon' => 'fa-bars',
-                                'route' => 'admin.menu-builder.index',
-                                'isActive' => request()->routeIs('admin.menu-builder.*'),
-                            ],
-                            [
-                                'type' => 'subsection',
-                                'title' => 'ROLES & PERMISSIONS',
-                                'items' => [
-                                    [
-                                        'name' => 'Users',
-                                        'icon' => 'fa-user',
-                                        'route' => 'admin.access.users.index',
-                                        'isActive' => request()->routeIs('admin.access.users.*'),
-                                    ],
-                                    [
-                                        'name' => 'Roles',
-                                        'icon' => 'fa-users',
-                                        'route' => 'admin.access.roles.index',
-                                        'isActive' => request()->routeIs('admin.access.roles.*'),
-                                    ],
-                                    [
-                                        'name' => 'Permissions',
-                                        'icon' => 'fa-key',
-                                        'route' => 'admin.access.permissions.index',
-                                        'isActive' => request()->routeIs('admin.access.permissions.*'),
-                                    ],
-                                ],
-                            ],
-                            [
-                                'type' => 'subsection',
-                                'title' => 'SYSTEM',
-                                'items' => [
-                                                                [
-                                'name' => 'General',
-                                'icon' => 'fa-gear',
-                                'route' => 'admin.settings.general.index',
-                                'isActive' => request()->routeIs('admin.settings.general.*'),
-                            ],
-                                    [
-                                        'name' => 'Home Setting',
-                                        'icon' => 'fa-house',
-                                        'route' => '#',
-                                        'isActive' => false,
-                                    ],
-                                    [
-                                        'name' => 'Social Setting',
-                                        'icon' => 'fa-comments',
-                                        'route' => '#',
-                                        'isActive' => false,
-                                    ],
-                                    [
-                                        'name' => 'Site settings',
-                                        'icon' => 'fa-globe',
-                                        'route' => '#',
-                                        'isActive' => false,
-                                    ],
-                                    [
-                                        'name' => 'Hero slider',
-                                        'icon' => 'fa-images',
-                                        'route' => '#',
-                                        'isActive' => false,
-                                    ],
-                                    [
-                                        'name' => 'Pagination',
-                                        'icon' => 'fa-list',
-                                        'route' => '#',
-                                        'isActive' => false,
-                                    ],
-                                    [
-                                        'name' => 'API Settings',
-                                        'icon' => 'fa-wrench',
-                                        'route' => 'admin.settings.api-settings.index',
-                                        'isActive' => request()->routeIs('admin.settings.api-settings.*'),
-                                    ],
-                                    [
-                                        'name' => 'Bestandsbeheer',
-                                        'icon' => 'fa-book-open',
-                                        'route' => '#',
-                                        'isActive' => false,
-                                    ],
-                                ],
-                            ],
-                        ],
+                        'name' => 'Mijn Taken',
+                        'icon' => 'fa-clipboard-list',
+                        'route' => 'admin.mijn-taken.index',
+                        'isActive' => request()->routeIs('admin.mijn-taken.*'),
+                    ],
+                ],
+            ],
+            [
+                'title' => 'PROGRAMMA OVERZICHT',
+                'items' => [
+                    [
+                        'name' => 'Dashboard',
+                        'icon' => 'fa-th',
+                        'route' => 'admin.index',
+                        'isActive' => request()->routeIs('admin.index'),
+                    ],
+                    [
+                        'name' => 'Businessdoelen',
+                        'icon' => 'fa-bullseye',
+                        'route' => 'admin.businessdoelen.index',
+                        'isActive' => request()->routeIs('admin.businessdoelen.*'),
+                    ],
+                    [
+                        'name' => 'Risico\'s & Knelpunten',
+                        'icon' => 'fa-exclamation-triangle',
+                        'route' => 'admin.risicos-knelpunten.index',
+                        'isActive' => request()->routeIs('admin.risicos-knelpunten.*'),
+                    ],
+                    [
+                        'name' => 'Rapportages',
+                        'icon' => 'fa-file-alt',
+                        'route' => 'admin.rapportages.index',
+                        'isActive' => request()->routeIs('admin.rapportages.*'),
                     ],
                 ],
             ],

@@ -23,68 +23,112 @@ class Sidebar extends Component
     {
         $sidebarMenus = [
             [
-                'title' => 'PROGRAMMA CONTEXT',
+                'title' => 'PROGRAMS',
                 'items' => [
                     [
-                        'name' => 'Programma Open Overheid',
-                        'icon' => 'fa-chevron-down',
-                        'route' => '#',
-                        'hasSubmenu' => true,
-                        'isSubmenuOpen' => false,
-                        'submenu' => [
-                            [
-                                'name' => 'Subprogramma 1',
-                                'icon' => 'fa-circle',
-                                'route' => '#',
-                                'isActive' => false,
-                            ],
-                            [
-                                'name' => 'Subprogramma 2',
-                                'icon' => 'fa-circle',
-                                'route' => '#',
-                                'isActive' => false,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-            [
-                'title' => 'MIJN WERK',
-                'items' => [
-                    [
-                        'name' => 'Mijn Taken',
-                        'icon' => 'fa-clipboard-list',
-                        'route' => 'admin.mijn-taken.index',
-                        'isActive' => request()->routeIs('admin.mijn-taken.*'),
-                    ],
-                ],
-            ],
-            [
-                'title' => 'PROGRAMMA OVERZICHT',
-                'items' => [
-                    [
-                        'name' => 'Dashboard',
-                        'icon' => 'fa-th',
-                        'route' => 'admin.index',
-                        'isActive' => request()->routeIs('admin.index'),
+                        'name' => 'Programs',
+                        'icon' => 'fa-building',
+                        'route' => 'admin.access.programs.index',
+                        'isActive' => request()->routeIs('admin.access.programs.*'),
                     ],
                     [
-                        'name' => 'Businessdoelen',
+                        'name' => 'Business Goals',
                         'icon' => 'fa-bullseye',
-                        'route' => 'admin.businessdoelen.index',
-                        'isActive' => request()->routeIs('admin.businessdoelen.*'),
+                        'route' => 'admin.access.business-goals.index',
+                        'isActive' => request()->routeIs('admin.access.business-goals.*'),
                     ],
                     [
-                        'name' => 'Risico\'s & Knelpunten',
-                        'icon' => 'fa-exclamation-triangle',
-                        'route' => 'admin.risicos-knelpunten.index',
-                        'isActive' => request()->routeIs('admin.risicos-knelpunten.*'),
+                        'name' => 'Epics',
+                        'icon' => 'fa-layer-group',
+                        'route' => 'admin.access.epics.index',
+                        'isActive' => request()->routeIs('admin.access.epics.*'),
                     ],
                     [
-                        'name' => 'Rapportages',
-                        'icon' => 'fa-file-alt',
-                        'route' => 'admin.rapportages.index',
-                        'isActive' => request()->routeIs('admin.rapportages.*'),
+                        'name' => 'Features',
+                        'icon' => 'fa-puzzle-piece',
+                        'route' => 'admin.access.features.index',
+                        'isActive' => request()->routeIs('admin.access.features.*'),
+                    ],
+                ],
+            ],
+            [
+                'title' => 'AGILE MANAGEMENT',
+                'items' => [
+                    [
+                        'name' => 'Sprints',
+                        'icon' => 'fa-running',
+                        'route' => 'admin.access.sprints.index',
+                        'isActive' => request()->routeIs('admin.access.sprints.*'),
+                    ],
+                    [
+                        'name' => 'Kanban Board',
+                        'icon' => 'fa-columns',
+                        'route' => 'admin.access.kanban.index',
+                        'isActive' => request()->routeIs('admin.access.kanban.*'),
+                    ],
+                    [
+                        'name' => 'User Stories',
+                        'icon' => 'fa-tasks',
+                        'route' => 'admin.access.user-stories.index',
+                        'isActive' => request()->routeIs('admin.access.user-stories.*'),
+                    ],
+                    [
+                        'name' => 'Testing',
+                        'icon' => 'fa-vial',
+                        'route' => 'admin.access.testing.index',
+                        'isActive' => request()->routeIs('admin.access.testing.*'),
+                    ],
+                    [
+                        'name' => 'Bugs',
+                        'icon' => 'fa-bug',
+                        'route' => 'admin.access.bugs.index',
+                        'isActive' => request()->routeIs('admin.access.bugs.*'),
+                    ],
+                ],
+            ],
+            [
+                'title' => 'DASHBOARDS',
+                'items' => [
+                    [
+                        'name' => 'Stakeholder Dashboard',
+                        'icon' => 'fa-chart-line',
+                        'route' => 'admin.access.dashboard.stakeholder',
+                        'isActive' => request()->routeIs('admin.access.dashboard.stakeholder'),
+                    ],
+                    [
+                        'name' => 'Project Manager Dashboard',
+                        'icon' => 'fa-chart-bar',
+                        'route' => 'admin.access.dashboard.project-manager',
+                        'isActive' => request()->routeIs('admin.access.dashboard.project-manager'),
+                    ],
+                    [
+                        'name' => 'Team Dashboard',
+                        'icon' => 'fa-users',
+                        'route' => 'admin.access.dashboard.team',
+                        'isActive' => request()->routeIs('admin.access.dashboard.team'),
+                    ],
+                ],
+            ],
+            [
+                'title' => 'REPORTING',
+                'items' => [
+                    [
+                        'name' => 'Sprint Reports',
+                        'icon' => 'fa-calendar-week',
+                        'route' => 'admin.access.reports.sprints',
+                        'isActive' => request()->routeIs('admin.access.reports.sprints'),
+                    ],
+                    [
+                        'name' => 'Quarterly Reports',
+                        'icon' => 'fa-calendar-alt',
+                        'route' => 'admin.access.reports.quarterly',
+                        'isActive' => request()->routeIs('admin.access.reports.quarterly'),
+                    ],
+                    [
+                        'name' => 'KPI Dashboard',
+                        'icon' => 'fa-chart-pie',
+                        'route' => 'admin.access.reports.kpi',
+                        'isActive' => request()->routeIs('admin.access.reports.kpi'),
                     ],
                 ],
             ],

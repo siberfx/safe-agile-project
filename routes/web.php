@@ -138,6 +138,29 @@ Route::group(['as' => 'admin.'], function () {
                 Route::put('/{permission}', [PermissionController::class, 'update'])->name('update');
                 Route::delete('/{permission}', [PermissionController::class, 'destroy'])->name('destroy');
             });
+
+            // SAFe Agile Module Routes
+            Route::resource('programs', App\Http\Controllers\Admin\ProgramController::class);
+            Route::resource('business-goals', App\Http\Controllers\Admin\BusinessGoalController::class);
+            Route::resource('epics', App\Http\Controllers\Admin\EpicController::class);
+            Route::resource('features', App\Http\Controllers\Admin\FeatureController::class);
+            Route::resource('sprints', App\Http\Controllers\Admin\SprintController::class);
+            Route::resource('user-stories', App\Http\Controllers\Admin\UserStoryController::class);
+            Route::resource('testing', App\Http\Controllers\Admin\TestingController::class);
+            Route::resource('bugs', App\Http\Controllers\Admin\BugController::class);
+
+            // Dashboard routes
+            Route::get('/dashboard/stakeholder', [SystemController::class, 'stakeholderDashboard'])->name('dashboard.stakeholder');
+            Route::get('/dashboard/project-manager', [SystemController::class, 'projectManagerDashboard'])->name('dashboard.project-manager');
+            Route::get('/dashboard/team', [SystemController::class, 'teamDashboard'])->name('dashboard.team');
+
+            // Kanban Board
+            Route::get('/kanban', [SystemController::class, 'kanbanBoard'])->name('kanban.index');
+
+            // Reports routes
+            Route::get('/reports/sprints', [SystemController::class, 'sprintReports'])->name('reports.sprints');
+            Route::get('/reports/quarterly', [SystemController::class, 'quarterlyReports'])->name('reports.quarterly');
+            Route::get('/reports/kpi', [SystemController::class, 'kpiDashboard'])->name('reports.kpi');
         });
 
     }); // End of protected admin routes

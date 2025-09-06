@@ -129,7 +129,7 @@
             <div x-data="{ dropdownOpen: false }" class="relative">
                 <button @click="dropdownOpen = !dropdownOpen" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 flex items-center">
                     <i class="fas fa-plus mr-2"></i>
-                    + Nieuw item
+                    Nieuw item
                 </button>
                 
                 <div x-show="dropdownOpen" @click.away="dropdownOpen = false" 
@@ -171,9 +171,6 @@
                 <button class="p-3 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-300 relative group">
                     <i class="fa-solid fa-bell text-base"></i>
                     <div class="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border border-white shadow-sm animate-pulse"></div>
-                </button>
-                <button class="p-3 text-gray-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all duration-300 group">
-                    <i class="fa-solid fa-cog text-base"></i>
                 </button>
             </div>
 

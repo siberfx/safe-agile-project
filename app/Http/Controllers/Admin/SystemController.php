@@ -40,7 +40,7 @@ class SystemController extends AdminBaseController
     public function teamDashboard()
     {
         // Kanban board, my tasks, test cases
-        $userStories = Task::where('agile_status', '!=', 'done')
+        $userStories = Task::where('kanban_status', '!=', 'done')
             ->with(['feature', 'epic', 'sprint'])
             ->get();
         $myTasks = Task::where('assigned_to', auth()->id())->get();
@@ -52,17 +52,15 @@ class SystemController extends AdminBaseController
     public function kanbanBoard()
     {
         // Kanban board for User Stories
-        $toDoStories = Task::where('agile_status', 'to_do')->with(['feature', 'epic'])->get();
-        $inProgressStories = Task::where('agile_status', 'in_progress')->with(['feature', 'epic'])->get();
-        $readyForTestStories = Task::where('agile_status', 'ready_for_test')->with(['feature', 'epic'])->get();
-        $approvedStories = Task::where('agile_status', 'approved')->with(['feature', 'epic'])->get();
-        $doneStories = Task::where('agile_status', 'done')->with(['feature', 'epic'])->get();
+        $toDoStories = Task::where('kanban_status', 'todo')->with(['feature', 'epic'])->get();
+        $inProgressStories = Task::where('kanban_status', 'in_progress')->with(['feature', 'epic'])->get();
+        $reviewStories = Task::where('kanban_status', 'review')->with(['feature', 'epic'])->get();
+        $doneStories = Task::where('kanban_status', 'done')->with(['feature', 'epic'])->get();
         
         return view('admin.kanban.index', compact(
             'toDoStories', 
             'inProgressStories', 
-            'readyForTestStories', 
-            'approvedStories', 
+            'reviewStories', 
             'doneStories'
         ));
     }

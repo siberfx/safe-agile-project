@@ -51,12 +51,12 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 py-1 text-xs font-medium rounded-full
-                                @if($story->agile_status === 'done') bg-green-100 text-green-800
-                                @elseif($story->agile_status === 'in_progress') bg-yellow-100 text-yellow-800
-                                @elseif($story->agile_status === 'ready_for_test') bg-purple-100 text-purple-800
-                                @elseif($story->agile_status === 'approved') bg-blue-100 text-blue-800
+                                @if($story->kanban_status === 'done') bg-green-100 text-green-800
+                                @elseif($story->kanban_status === 'in_progress') bg-yellow-100 text-yellow-800
+                                @elseif($story->kanban_status === 'review') bg-purple-100 text-purple-800
+                                @elseif($story->kanban_status === 'todo') bg-gray-100 text-gray-800
                                 @else bg-gray-100 text-gray-800 @endif">
-                                {{ ucfirst(str_replace('_', ' ', $story->agile_status)) }}
+                                {{ ucfirst(str_replace('_', ' ', $story->kanban_status)) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

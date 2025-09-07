@@ -44,7 +44,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">In Progress</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $myTasks->where('agile_status', 'in_progress')->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $myTasks->where('kanban_status', 'in_progress')->count() }}</p>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Ready for Test</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $myTasks->where('agile_status', 'ready_for_test')->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $myTasks->where('kanban_status', 'review')->count() }}</p>
                 </div>
             </div>
         </div>
@@ -117,13 +117,12 @@
                             </div>
                             <div class="ml-4">
                                 <span class="px-3 py-1 text-xs font-medium rounded-full
-                                    @if($task->agile_status === 'to_do') bg-gray-100 text-gray-800
-                                    @elseif($task->agile_status === 'in_progress') bg-yellow-100 text-yellow-800
-                                    @elseif($task->agile_status === 'ready_for_test') bg-purple-100 text-purple-800
-                                    @elseif($task->agile_status === 'approved') bg-blue-100 text-blue-800
-                                    @elseif($task->agile_status === 'done') bg-green-100 text-green-800
+                                    @if($task->kanban_status === 'todo') bg-gray-100 text-gray-800
+                                    @elseif($task->kanban_status === 'in_progress') bg-yellow-100 text-yellow-800
+                                    @elseif($task->kanban_status === 'review') bg-purple-100 text-purple-800
+                                    @elseif($task->kanban_status === 'done') bg-green-100 text-green-800
                                     @endif">
-                                    {{ ucfirst(str_replace('_', ' ', $task->agile_status)) }}
+                                    {{ ucfirst(str_replace('_', ' ', $task->kanban_status)) }}
                                 </span>
                             </div>
                         </div>

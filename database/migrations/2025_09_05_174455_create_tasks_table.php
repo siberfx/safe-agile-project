@@ -13,26 +13,43 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
+            
+            // Basic task fields
             $table->string('title');
             $table->text('description')->nullable();
-            $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
-            $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
-            $table->enum('status', ['pending', 'in_progress', 'completed', 'cancelled'])->default('pending');
+            $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
             $table->date('due_date')->nullable();
-            $table->integer('priority')->default(1); // 1=low, 2=medium, 3=high, 4=critical
             
-            // Agile fields for User Stories
-            $table->foreignId('sprint_id')->nullable()->constrained('sprints')->onDelete('set null');
+            // Project and assignment
+            $table->foreignId('project_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
+            
+            // Agile fields
+            $table->foreignId('sprint_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('feature_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('epic_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('business_goal_id')->nullable()->constrained()->onDelete('set null');
+            
+            // Story points and acceptance criteria
             $table->integer('story_points')->nullable();
             $table->text('acceptance_criteria')->nullable();
-            $table->enum('agile_status', ['to_do', 'in_progress', 'ready_for_test', 'approved', 'done'])->default('to_do');
-            $table->foreignId('feature_id')->nullable()->constrained('features')->onDelete('set null');
-            $table->foreignId('epic_id')->nullable()->constrained('epics')->onDelete('set null');
-            $table->foreignId('business_goal_id')->nullable()->constrained('business_goals')->onDelete('set null');
-            $table->integer('priority_order')->nullable();
             $table->text('definition_of_done')->nullable();
             
+            // Kanban specific fields
+            $table->enum('kanban_status', ['todo', 'in_progress', 'review', 'done'])->default('todo');
+            $table->integer('kanban_order')->default(0);
+            $table->json('tags')->nullable();
+            $table->text('notes')->nullable();
+            
+            // Timestamps
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
+            
+            // Indexes for performance
+            $table->index(['kanban_status', 'kanban_order']);
+            $table->index(['assigned_to', 'kanban_status']);
+            $table->index(['project_id', 'kanban_status']);
         });
     }
 

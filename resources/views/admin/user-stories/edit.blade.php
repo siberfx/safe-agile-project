@@ -73,11 +73,10 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Agile Status</label>
                     <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                        <option value="to_do" {{ ($userStory->agile_status ?? '') === 'to_do' ? 'selected' : '' }}>To Do</option>
-                        <option value="in_progress" {{ ($userStory->agile_status ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="ready_for_test" {{ ($userStory->agile_status ?? '') === 'ready_for_test' ? 'selected' : '' }}>Ready for Test</option>
-                        <option value="approved" {{ ($userStory->agile_status ?? '') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="done" {{ ($userStory->agile_status ?? '') === 'done' ? 'selected' : '' }}>Done</option>
+                        <option value="todo" {{ ($userStory->kanban_status ?? '') === 'todo' ? 'selected' : '' }}>To Do</option>
+                        <option value="in_progress" {{ ($userStory->kanban_status ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="review" {{ ($userStory->kanban_status ?? '') === 'review' ? 'selected' : '' }}>Review</option>
+                        <option value="done" {{ ($userStory->kanban_status ?? '') === 'done' ? 'selected' : '' }}>Done</option>
                     </select>
                 </div>
             </div>

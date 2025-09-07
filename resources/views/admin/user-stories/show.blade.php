@@ -28,7 +28,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-medium text-gray-500">Agile Status</label>
-                        <p class="text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $userStory->agile_status)) }}</p>
+                        <p class="text-sm text-gray-900">{{ ucfirst(str_replace('_', ' ', $userStory->kanban_status)) }}</p>
                     </div>
                     <div>
                         <label class="text-sm font-medium text-gray-500">Priority</label>

@@ -13,25 +13,33 @@ class Task extends Model
         'description',
         'project_id',
         'assigned_to',
-        'status',
         'due_date',
         'priority',
         // Agile fields
         'sprint_id',
         'story_points',
         'acceptance_criteria',
-        'agile_status',
         'feature_id',
         'epic_id',
         'business_goal_id',
-        'priority_order',
         'definition_of_done',
+        // Kanban fields
+        'kanban_status',
+        'kanban_order',
+        'tags',
+        'notes',
+        'started_at',
+        'completed_at',
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'story_points' => 'integer',
         'priority_order' => 'integer',
+        'kanban_order' => 'integer',
+        'tags' => 'array',
+        'started_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     public function project(): BelongsTo

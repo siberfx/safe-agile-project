@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
-use App\Models\Project;
 use Illuminate\Database\Seeder;
 
 class TaskSeeder extends Seeder
@@ -16,14 +16,16 @@ class TaskSeeder extends Seeder
     {
         $users = User::all();
         $projects = Project::all();
-        
+
         if ($users->isEmpty()) {
             $this->command->warn('No users found. Please run UserSeeder first.');
+
             return;
         }
-        
+
         if ($projects->isEmpty()) {
             $this->command->warn('No projects found. Please run ProgramSeeder first.');
+
             return;
         }
 
@@ -35,7 +37,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'high',
                 'story_points' => 8,
                 'tags' => ['backend', 'security'],
-                'notes' => 'Critical for MVP',
             ],
             [
                 'title' => 'Design dashboard layout',
@@ -44,7 +45,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'medium',
                 'story_points' => 5,
                 'tags' => ['frontend', 'ui'],
-                'notes' => 'Using Tailwind CSS',
             ],
             [
                 'title' => 'Setup database migrations',
@@ -53,7 +53,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'high',
                 'story_points' => 3,
                 'tags' => ['backend', 'database'],
-                'notes' => 'Completed successfully',
             ],
             [
                 'title' => 'API documentation',
@@ -62,7 +61,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'medium',
                 'story_points' => 2,
                 'tags' => ['documentation', 'api'],
-                'notes' => 'Needs review from team lead',
             ],
             [
                 'title' => 'Unit tests for models',
@@ -71,7 +69,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'low',
                 'story_points' => 4,
                 'tags' => ['testing', 'backend'],
-                'notes' => 'Can be done after core features',
             ],
             [
                 'title' => 'Email notification system',
@@ -80,7 +77,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'medium',
                 'story_points' => 6,
                 'tags' => ['backend', 'notifications'],
-                'notes' => 'Use Laravel Mail',
             ],
             [
                 'title' => 'Mobile responsive design',
@@ -89,7 +85,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'high',
                 'story_points' => 5,
                 'tags' => ['frontend', 'mobile'],
-                'notes' => 'Testing on various devices',
             ],
             [
                 'title' => 'Performance optimization',
@@ -98,7 +93,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'medium',
                 'story_points' => 7,
                 'tags' => ['performance', 'backend'],
-                'notes' => 'Use Redis for caching',
             ],
             [
                 'title' => 'User role management',
@@ -107,7 +101,6 @@ class TaskSeeder extends Seeder
                 'priority' => 'high',
                 'story_points' => 6,
                 'tags' => ['backend', 'security'],
-                'notes' => 'Using Spatie Laravel Permission',
             ],
             [
                 'title' => 'File upload functionality',
@@ -116,12 +109,11 @@ class TaskSeeder extends Seeder
                 'priority' => 'low',
                 'story_points' => 3,
                 'tags' => ['frontend', 'backend'],
-                'notes' => 'Completed with drag & drop',
             ],
         ];
 
         foreach ($tasks as $index => $taskData) {
-            Task::create([
+            $task = Task::create([
                 ...$taskData,
                 'project_id' => $projects->random()->id,
                 'assigned_to' => $users->random()->id,
@@ -130,8 +122,13 @@ class TaskSeeder extends Seeder
                 'started_at' => in_array($taskData['kanban_status'], ['in_progress', 'review', 'done']) ? now()->subDays(rand(1, 10)) : null,
                 'completed_at' => $taskData['kanban_status'] === 'done' ? now()->subDays(rand(1, 5)) : null,
             ]);
+
+            $task->notes()->create([
+                'body' => 'This is a note for task '.$task->title,
+                'user_id' => $users->random()->id,
+            ]);
         }
 
-        $this->command->info('Created ' . count($tasks) . ' sample tasks.');
+        $this->command->info('Created '.count($tasks).' sample tasks.');
     }
 }

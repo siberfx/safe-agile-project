@@ -14,8 +14,13 @@ class TaskSeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
-        $projects = Project::all();
+
+        if (Project::count() > 0) {
+            return;
+        }
+
+        $users = User::take(10)->get();
+        $projects = Project::take(10)->get();
 
         if ($users->isEmpty()) {
             $this->command->warn('No users found. Please run UserSeeder first.');

@@ -139,7 +139,8 @@
     </div>
 
     <!-- Kanban Board -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="relative">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
         <!-- To Do Column -->
         <div class="kanban-column" data-status="todo">
             <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-200 h-full">
@@ -204,6 +205,29 @@
             </div>
         </div>
     </div>
+    
+    <!-- Task Detail Slide-in Panel -->
+    <div id="task-detail-panel" class="fixed top-0 right-0 h-full w-full sm:w-1/2 lg:w-1/3 min-w-[400px] max-w-[600px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 border-l border-gray-200">
+        <div class="h-full flex flex-col">
+            <!-- Panel Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">Task Details</h3>
+                <button id="close-task-panel" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Panel Content -->
+            <div class="flex-1 overflow-y-auto">
+                <div id="task-detail-content" class="p-6">
+                    <!-- Task content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel Overlay -->
+    <div id="task-panel-overlay" class="fixed inset-0 bg-black/30 hidden z-40 cursor-pointer"></div>
 </div>
 
 <!-- Add Task Modal -->
@@ -835,9 +859,16 @@ class KanbanBoard {
 
     createTaskElement(task) {
         const div = document.createElement('div');
-        div.className = 'task-card bg-white rounded-xl p-5 shadow-lg border border-gray-100 cursor-move hover:shadow-xl transition-all duration-200 group hover:border-primary/20';
+        div.className = 'task-card bg-white rounded-xl p-5 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all duration-200 group hover:border-primary/20';
         div.draggable = true;
         div.dataset.taskId = task.id;
+        
+        // Add click event to open detail panel
+        div.addEventListener('click', (e) => {
+            // Don't open panel if clicking on edit/delete buttons
+            if (e.target.closest('button')) return;
+            this.openTaskDetail(task.id);
+        });
 
         const priorityColors = {
             'high': 'bg-red-100 text-red-800 border-red-200',
@@ -1675,6 +1706,12 @@ class KanbanBoard {
                     this.renderTasks();
                     this.loadStats();
                     
+                    // Update the detail panel if it's open for this task
+                    const panel = document.getElementById('task-detail-panel');
+                    if (!panel.classList.contains('translate-x-full')) {
+                        this.loadTaskDetailContent(updatedTask.data);
+                    }
+                    
                     // Close modal
                     document.getElementById('edit-task-modal').remove();
                     
@@ -1750,6 +1787,9 @@ class KanbanBoard {
                 this.filteredTasks = this.filteredTasks.filter(t => t.id !== taskId);
                 this.renderTasks();
                 this.loadStats();
+                
+                // Close the detail panel if it's open for this task
+                this.closeTaskDetail();
                 
                 Swal.fire({
                     icon: 'success',
@@ -1880,6 +1920,333 @@ class KanbanBoard {
             this.showError('Failed to update task');
         }
     }
+
+    // Task Detail Panel Methods
+    openTaskDetail(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Show overlay
+        document.getElementById('task-panel-overlay').classList.remove('hidden');
+        
+        // Load task content
+        this.loadTaskDetailContent(task);
+        
+        // Slide in panel
+        const panel = document.getElementById('task-detail-panel');
+        panel.classList.remove('translate-x-full');
+        panel.classList.add('translate-x-0');
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeTaskDetail() {
+        const panel = document.getElementById('task-detail-panel');
+        const overlay = document.getElementById('task-panel-overlay');
+        
+        // Slide out panel
+        panel.classList.remove('translate-x-0');
+        panel.classList.add('translate-x-full');
+        
+        // Hide overlay
+        overlay.classList.add('hidden');
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+    }
+
+    loadTaskDetailContent(task) {
+        console.log('Loading task detail for:', task);
+        const content = document.getElementById('task-detail-content');
+        
+        const priorityColors = {
+            'high': 'bg-red-100 text-red-800 border-red-200',
+            'medium': 'bg-primary/10 text-primary border-primary/20',
+            'low': 'bg-green-100 text-green-800 border-green-200'
+        };
+
+        const statusColors = {
+            'todo': 'bg-gray-100 text-gray-800',
+            'in_progress': 'bg-yellow-100 text-yellow-800',
+            'review': 'bg-purple-100 text-purple-800',
+            'done': 'bg-green-100 text-green-800'
+        };
+
+        const getInitials = (name) => {
+            if (!name) return '?';
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        };
+
+        const getAvatarColor = (name) => {
+            if (!name) return 'bg-gray-400';
+            const colors = ['bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-yellow-500'];
+            const index = name.length % colors.length;
+            return colors[index];
+        };
+
+        content.innerHTML = `
+            <div class="space-y-6">
+                <!-- Task Header -->
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <h2 class="text-xl font-bold text-gray-900 mb-2">${this.escapeHtml(task.title)}</h2>
+                        <div class="flex items-center space-x-2">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${priorityColors[task.priority] || 'bg-gray-100 text-gray-800'}">
+                                <i class="fas fa-flag mr-1"></i>
+                                ${task.priority}
+                            </span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColors[task.status] || 'bg-gray-100 text-gray-800'}">
+                                ${(task.status || '').replace('_', ' ')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                ${task.description ? `
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Description</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed">${this.escapeHtml(task.description || '')}</p>
+                </div>
+                ` : ''}
+
+                <!-- Task Meta -->
+                <div class="space-y-4">
+                    <!-- Assignee -->
+                    ${task.assignee ? `
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Assignee</h3>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 ${getAvatarColor(task.assignee || '')} rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                ${getInitials(task.assignee || '')}
+                            </div>
+                            <span class="text-sm text-gray-900">${this.escapeHtml(task.assignee || '')}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <!-- Story Points -->
+                    ${task.story_points ? `
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Story Points</h3>
+                        <span class="inline-flex items-center px-3 py-1 rounded-lg bg-blue-100 text-blue-800 text-sm font-medium">
+                            <i class="fas fa-chart-bar mr-1"></i>
+                            ${task.story_points}
+                        </span>
+                    </div>
+                    ` : ''}
+
+                    <!-- Due Date -->
+                    ${task.due_date ? `
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Due Date</h3>
+                        <span class="inline-flex items-center px-3 py-1 rounded-lg bg-gray-100 text-gray-800 text-sm font-medium">
+                            <i class="fas fa-calendar mr-1"></i>
+                            ${task.due_date ? new Date(task.due_date).toLocaleDateString() : ''}
+                        </span>
+                    </div>
+                    ` : ''}
+
+                    <!-- Tags -->
+                    ${task.tags && Array.isArray(task.tags) && task.tags.length > 0 ? `
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Tags</h3>
+                        <div class="flex flex-wrap gap-2">
+                            ${task.tags.map(tag => `
+                                <span class="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                                    ${this.escapeHtml(tag || '')}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- Notes Section -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-sm font-semibold text-gray-700">Notes</h3>
+                        <button onclick="kanbanBoard.addTaskNote(${task.id})" class="text-primary hover:text-primary/80 text-sm font-medium">
+                            <i class="fas fa-plus mr-1"></i>
+                            Add Note
+                        </button>
+                    </div>
+                    <div id="task-notes-${task.id}" class="space-y-3">
+                        ${task.notes_list && task.notes_list.length > 0 ? 
+                            task.notes_list.map(note => `
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                    <p class="text-sm text-gray-900 mb-2">${this.escapeHtml(note.body)}</p>
+                                    <div class="flex items-center text-xs text-gray-500">
+                                        <i class="fas fa-user mr-1"></i>
+                                        <span>${this.escapeHtml(note.user_name)}</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-clock mr-1"></i>
+                                        <span>${note.created_at}</span>
+                                    </div>
+                                </div>
+                            `).join('') : 
+                            '<p class="text-gray-500 text-sm">No notes yet.</p>'
+                        }
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-4 border-t border-gray-200">
+                    <div class="flex space-x-3">
+                        <button onclick="kanbanBoard.editTask(${task.id})" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                            <i class="fas fa-edit mr-2"></i>
+                            Edit Task
+                        </button>
+                        <button onclick="kanbanBoard.deleteTask(${task.id})" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                            <i class="fas fa-trash mr-2"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    addTaskNote(taskId) {
+        // Create a nice modal for adding notes
+        const addNoteModalHTML = `
+            <div id="add-note-modal" class="fixed inset-0 bg-black/30 z-50">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
+                        <!-- Modal Header -->
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-900">Add Note</h3>
+                            <button onclick="document.getElementById('add-note-modal').remove()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Modal Body -->
+                        <form id="add-note-form" class="p-6">
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Note</label>
+                                <textarea id="note-text" rows="4" required
+                                          class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 resize-none"
+                                          placeholder="Enter your note here..."></textarea>
+                            </div>
+                            
+                            <!-- Modal Footer -->
+                            <div class="flex space-x-3">
+                                <button type="button" onclick="document.getElementById('add-note-modal').remove()" 
+                                        class="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                        class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors">
+                                    Add Note
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', addNoteModalHTML);
+        
+        // Setup form submission
+        document.getElementById('add-note-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const noteText = document.getElementById('note-text').value.trim();
+            if (!noteText) return;
+            
+            try {
+                // Save note via API
+                const response = await fetch('/admin/api/notes', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        entity_type: 'App\\Models\\Task',
+                        entity_id: taskId,
+                        body: noteText
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // Add note to the display
+                    const notesContainer = document.getElementById(`task-notes-${taskId}`);
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'bg-gray-50 rounded-lg p-3 border border-gray-200';
+                    noteElement.innerHTML = `
+                        <p class="text-sm text-gray-900 mb-2">${this.escapeHtml(noteText)}</p>
+                        <div class="flex items-center text-xs text-gray-500">
+                            <i class="fas fa-user mr-1"></i>
+                            <span>${result.data.user_name}</span>
+                            <span class="mx-2">•</span>
+                            <i class="fas fa-clock mr-1"></i>
+                            <span>${result.data.created_at}</span>
+                        </div>
+                    `;
+                    // Remove "No notes yet" message if it exists
+                    const noNotesMessage = notesContainer.querySelector('p.text-gray-500');
+                    if (noNotesMessage) {
+                        noNotesMessage.remove();
+                    }
+                    
+                    notesContainer.appendChild(noteElement);
+                    
+                    // Update task data
+                    const task = this.tasks.find(t => t.id === taskId);
+                    if (task) {
+                        // Initialize notes_list if it doesn't exist
+                        if (!task.notes_list) {
+                            task.notes_list = [];
+                        }
+                        
+                        // Add new note to the notes_list array
+                        task.notes_list.push({
+                            id: result.data.id,
+                            body: noteText,
+                            user_name: result.data.user_name,
+                            created_at: result.data.created_at
+                        });
+                        
+                        // Update the single notes field as well
+                        task.notes = noteText;
+                    }
+                    
+                    // Close modal
+                    document.getElementById('add-note-modal').remove();
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Note added successfully!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error('Failed to save note');
+                }
+            } catch (error) {
+                console.error('Error adding note:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to add note. Please try again.',
+                });
+            }
+        });
+        
+        // Focus on textarea
+        setTimeout(() => {
+            document.getElementById('note-text').focus();
+        }, 100);
+    }
 }
 
 // Global variable for Kanban Board
@@ -1894,6 +2261,26 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             kanbanBoard = new KanbanBoard();
             console.log('Kanban Board initialized successfully');
+            
+            // Add panel close event listeners
+            document.getElementById('close-task-panel').addEventListener('click', () => {
+                kanbanBoard.closeTaskDetail();
+            });
+            
+            document.getElementById('task-panel-overlay').addEventListener('click', () => {
+                kanbanBoard.closeTaskDetail();
+            });
+            
+            // Close panel on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const panel = document.getElementById('task-detail-panel');
+                    if (!panel.classList.contains('translate-x-full')) {
+                        kanbanBoard.closeTaskDetail();
+                    }
+                }
+            });
+            
         } catch (error) {
             console.error('Error initializing Kanban Board:', error);
         }

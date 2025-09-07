@@ -16,7 +16,7 @@ class TaskController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tasks = Task::with(['assignedTo', 'project', 'sprint'])
+        $tasks = Task::with(['assignedTo', 'project', 'sprint', 'notes.user'])
             ->orderBy('kanban_order')
             ->get()
             ->map(function ($task) {
@@ -33,6 +33,14 @@ class TaskController extends Controller
                     'sprint' => $task->sprint?->name,
                     'tags' => $task->tags ?? [],
                     'notes' => $task->notes,
+                    'notes_list' => $task->notes()->get()->map(function($note) {
+                        return [
+                            'id' => $note->id,
+                            'body' => $note->body,
+                            'user_name' => $note->user->name ?? 'Unknown',
+                            'created_at' => $note->created_at->format('d-m-Y H:i')
+                        ];
+                    }),
                     'due_date' => $task->due_date?->format('Y-m-d'),
                     'started_at' => $task->started_at?->format('Y-m-d H:i:s'),
                     'completed_at' => $task->completed_at?->format('Y-m-d H:i:s'),
@@ -203,6 +211,14 @@ class TaskController extends Controller
             'sprint' => $task->sprint?->name,
             'tags' => $task->tags ?? [],
             'notes' => $task->notes,
+            'notes_list' => $task->notes()->get()->map(function($note) {
+                return [
+                    'id' => $note->id,
+                    'body' => $note->body,
+                    'user_name' => $note->user->name ?? 'Unknown',
+                    'created_at' => $note->created_at->format('d-m-Y H:i')
+                ];
+            }),
             'due_date' => $task->due_date?->format('Y-m-d'),
             'started_at' => $task->started_at?->format('Y-m-d H:i:s'),
             'completed_at' => $task->completed_at?->format('Y-m-d H:i:s'),

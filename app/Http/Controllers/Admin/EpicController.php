@@ -54,7 +54,7 @@ class EpicController extends Controller
      */
     public function show(string $id)
     {
-        $epic = Epic::with(['businessGoal', 'features.userStories'])->findOrFail($id);
+        $epic = Epic::with(['businessGoal', 'features.userStories', 'notes.user'])->findOrFail($id);
         return view('admin.epics.show', compact('epic'));
     }
 

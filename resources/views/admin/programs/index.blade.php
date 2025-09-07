@@ -21,7 +21,7 @@
     <!-- Programs Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($programs ?? [] as $program)
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <a href="{{ route('admin.access.programs.show', $program->id) }}" class="block bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
             <div class="p-6">
                 <!-- Program Header -->
                 <div class="flex items-start justify-between mb-4">
@@ -80,29 +80,8 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
-                <div class="mt-4 flex items-center justify-between">
-                    <div class="flex space-x-2">
-                        <a href="{{ route('admin.access.programs.show', $program->id) }}" class="text-gray-400 hover:text-gray-600" title="View">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('admin.access.programs.edit', $program->id) }}" class="text-gray-400 hover:text-gray-600" title="Edit">
-                            <i class="fas fa-pencil"></i>
-                        </a>
-                        <form method="POST" action="{{ route('admin.access.programs.destroy', $program->id) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this program?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-gray-400 hover:text-red-600" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <a href="{{ route('admin.access.programs.show', $program->id) }}" class="text-primary hover:text-primary/80 text-sm font-medium">
-                        View Details →
-                    </a>
-                </div>
             </div>
-        </div>
+        </a>
         @empty
         <div class="col-span-full">
             <div class="text-center py-12">

@@ -56,7 +56,7 @@ class BusinessGoalController extends Controller
      */
     public function show(string $id)
     {
-        $businessGoal = BusinessGoal::with(['program', 'epics.features.userStories'])->findOrFail($id);
+        $businessGoal = BusinessGoal::with(['program', 'epics.features.userStories', 'notes.user'])->findOrFail($id);
         return view('admin.business-goals.show', compact('businessGoal'));
     }
 

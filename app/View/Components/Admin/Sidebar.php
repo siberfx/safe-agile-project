@@ -26,6 +26,12 @@ class Sidebar extends Component
                 'title' => 'PROGRAMS',
                 'items' => [
                     [
+                        'name' => 'Projects',
+                        'icon' => 'fa-folder',
+                        'route' => 'admin.access.projects.index',
+                        'isActive' => request()->routeIs('admin.access.projects.*'),
+                    ],
+                    [
                         'name' => 'Programs',
                         'icon' => 'fa-building',
                         'route' => 'admin.access.programs.index',

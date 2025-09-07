@@ -21,7 +21,7 @@
     <!-- Epics Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse($epics ?? [] as $epic)
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <a href="{{ route('admin.access.epics.show', $epic->id) }}" class="block bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
             <div class="p-6">
                 <!-- Epic Header -->
                 <div class="flex items-start justify-between mb-4">
@@ -73,37 +73,13 @@
 
                 <!-- Features Count -->
                 <div class="mt-4 pt-4 border-t border-gray-200">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center text-sm text-gray-600">
-                            <i class="fas fa-puzzle-piece mr-2"></i>
-                            <span>{{ $epic->features->count() }} Features</span>
-                        </div>
-                        <a href="{{ route('admin.access.epics.show', $epic->id) }}" class="text-primary hover:text-primary/80 text-sm font-medium">
-                            View Details →
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="mt-4 flex items-center justify-between">
-                    <div class="flex space-x-2">
-                        <a href="{{ route('admin.access.epics.show', $epic->id) }}" class="text-gray-400 hover:text-gray-600" title="View">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="{{ route('admin.access.epics.edit', $epic->id) }}" class="text-gray-400 hover:text-gray-600" title="Edit">
-                            <i class="fas fa-pencil"></i>
-                        </a>
-                        <form action="{{ route('admin.access.epics.destroy', $epic->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this epic?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="text-gray-400 hover:text-red-600" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-puzzle-piece mr-2"></i>
+                        <span>{{ $epic->features->count() }} Features</span>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
         @empty
         <div class="col-span-full">
             <div class="text-center py-12">

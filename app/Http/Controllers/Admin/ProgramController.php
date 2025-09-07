@@ -52,7 +52,7 @@ class ProgramController extends Controller
      */
     public function show(string $id)
     {
-        $program = Program::with(['projects', 'businessGoals.epics.features'])->findOrFail($id);
+        $program = Program::with(['projects', 'businessGoals.epics.features', 'notes.user'])->findOrFail($id);
         return view('admin.programs.show', compact('program'));
     }
 

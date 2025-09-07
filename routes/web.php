@@ -139,6 +139,7 @@ Route::group(['as' => 'admin.'], function () {
 
             // SAFe Agile Module Routes
             Route::resource('programs', App\Http\Controllers\Admin\ProgramController::class);
+            Route::resource('projects', App\Http\Controllers\Admin\ProjectController::class);
             Route::resource('business-goals', App\Http\Controllers\Admin\BusinessGoalController::class);
             Route::resource('epics', App\Http\Controllers\Admin\EpicController::class);
             Route::resource('features', App\Http\Controllers\Admin\FeatureController::class);
@@ -155,6 +156,7 @@ Route::group(['as' => 'admin.'], function () {
             // Kanban Board
             Route::get('/kanban', [SystemController::class, 'kanbanBoard'])->name('kanban.index');
 
+
             // Reports routes
             Route::get('/reports/sprints', [SystemController::class, 'sprintReports'])->name('reports.sprints');
             Route::get('/reports/quarterly', [SystemController::class, 'quarterlyReports'])->name('reports.quarterly');
@@ -162,6 +164,10 @@ Route::group(['as' => 'admin.'], function () {
         });
 
     }); // End of protected admin routes
+
+    // API Routes for Notes
+    Route::post('/admin/api/notes', [App\Http\Controllers\Api\NoteController::class, 'store'])->name('api.notes.store');
+    Route::delete('/admin/api/notes/{note}', [App\Http\Controllers\Api\NoteController::class, 'destroy'])->name('api.notes.destroy');
 
     // Admin fallback route - redirect non-existent admin routes to login
     Route::fallback(function () {

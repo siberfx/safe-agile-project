@@ -3,12 +3,30 @@
 @section('title', 'Create Feature - Programma Portaal')
 
 @section('content')
-<div class="max-w-4xl mx-auto">
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h1 class="text-2xl font-semibold text-gray-900">Create New Feature</h1>
-            <p class="text-gray-600 mt-1">Define a system capability or functionality</p>
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Create New Feature</h1>
+            <p class="text-gray-600 mt-2">Define a system capability or functionality for your epic</p>
         </div>
+        <div class="flex items-center space-x-4">
+            <a href="{{ route('admin.access.features.index') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Features
+            </a>
+        </div>
+    </div>
+
+    <!-- Create Form -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Feature Details</h2>
+                    <p class="text-sm text-gray-600 mt-1">Define the feature and its parameters</p>
+                </div>
         
         <form action="{{ route('admin.access.features.store') }}" method="POST" class="p-6 space-y-6">
             @csrf
@@ -95,16 +113,56 @@
                 @enderror
             </div>
 
-            <!-- Actions -->
-            <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                <a href="{{ route('admin.access.features.index') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                    Cancel
-                </a>
-                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-                    Create Feature
-                </button>
+                    <!-- Actions -->
+                    <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
+                        <a href="{{ route('admin.access.features.index') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                            Cancel
+                        </a>
+                        <button type="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>
+                            Create Feature
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Help -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Creating a Feature</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <div class="flex items-start">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-2"></i>
+                        <p>Features are system capabilities that provide value to users and support business goals.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-target text-blue-500 mt-1 mr-2"></i>
+                        <p>Set realistic story points and target dates to help with sprint planning and resource allocation.</p>
+                    </div>
+                    <div class="flex items-start">
+                        <i class="fas fa-cogs text-green-500 mt-1 mr-2"></i>
+                        <p>PI and Sprint information help track feature delivery across program increments.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                <div class="space-y-2">
+                    <a href="{{ route('admin.access.features.index') }}" class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 text-center block">
+                        <i class="fas fa-list mr-2"></i>
+                        View All Features
+                    </a>
+                    <a href="{{ route('admin.access.epics.index') }}" class="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 text-center block">
+                        <i class="fas fa-layer-group mr-2"></i>
+                        Manage Epics
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

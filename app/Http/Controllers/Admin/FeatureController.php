@@ -54,7 +54,7 @@ class FeatureController extends Controller
      */
     public function show(string $id)
     {
-        $feature = Feature::with(['epic', 'userStories'])->findOrFail($id);
+        $feature = Feature::with(['epic', 'userStories', 'notes.user'])->findOrFail($id);
         return view('admin.features.show', compact('feature'));
     }
 

@@ -21,7 +21,7 @@
     <!-- Business Goals Cards -->
     <div class="space-y-4">
         @forelse($businessGoals ?? [] as $goal)
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+        <a href="{{ route('admin.access.business-goals.show', $goal->id) }}" class="block bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
             <div class="p-6">
                 <!-- Header Row -->
                 <div class="flex items-start justify-between mb-4">
@@ -33,7 +33,7 @@
                         </p>
                     </div>
                     
-                    <!-- Status & Actions -->
+                    <!-- Status -->
                     <div class="flex items-center space-x-4 ml-6">
                         <!-- Status Badge -->
                         <span class="px-3 py-1 text-xs font-medium rounded-full
@@ -52,23 +52,6 @@
                                 {{ ucfirst($goal->status) }}
                             @endif
                         </span>
-                        
-                        <!-- Action Buttons -->
-                        <div class="flex items-center space-x-1">
-                            <a href="{{ route('admin.access.business-goals.show', $goal->id) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="View Details">
-                                <i class="fas fa-eye text-sm"></i>
-                            </a>
-                            <a href="{{ route('admin.access.business-goals.edit', $goal->id) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Edit">
-                                <i class="fas fa-pencil text-sm"></i>
-                            </a>
-                            <form action="{{ route('admin.access.business-goals.destroy', $goal->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this business goal?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200" title="Delete">
-                                    <i class="fas fa-trash text-sm"></i>
-                                </button>
-                            </form>
-                        </div>
                     </div>
                 </div>
                 
@@ -130,17 +113,12 @@
                 </div>
 
                 <!-- Epics Count -->
-                <div class="mt-4 flex items-center justify-between">
-                    <div class="flex items-center text-sm text-gray-600">
-                        <i class="fas fa-layer-group mr-2"></i>
-                        <span>{{ $goal->epics->count() }} Epics</span>
-                    </div>
-                    <a href="{{ route('admin.access.business-goals.show', $goal->id) }}" class="text-primary hover:text-primary/80 text-sm font-medium">
-                        View Details →
-                    </a>
+                <div class="mt-4 flex items-center text-sm text-gray-600">
+                    <i class="fas fa-layer-group mr-2"></i>
+                    <span>{{ $goal->epics->count() }} Epics</span>
                 </div>
             </div>
-        </div>
+        </a>
         @empty
         <div class="text-center py-12">
             <i class="fas fa-bullseye text-gray-300 text-6xl mb-4"></i>

@@ -14,8 +14,8 @@ class TaskSeeder extends Seeder
      */
     public function run(): void
     {
-
-        if (Project::count() > 0) {
+        // Check if tasks already exist
+        if (Task::count() > 0) {
             return;
         }
 
@@ -29,8 +29,7 @@ class TaskSeeder extends Seeder
         }
 
         if ($projects->isEmpty()) {
-            $this->command->warn('No projects found. Please run ProgramSeeder first.');
-
+            $this->command->warn('No projects found. Please run ProjectSeeder first.');
             return;
         }
 
@@ -124,13 +123,9 @@ class TaskSeeder extends Seeder
                 'assigned_to' => $users->random()->id,
                 'kanban_order' => $index + 1,
                 'due_date' => now()->addDays(rand(1, 30)),
+                'notes' => 'This is a note for task: '.$taskData['title'],
                 'started_at' => in_array($taskData['kanban_status'], ['in_progress', 'review', 'done']) ? now()->subDays(rand(1, 10)) : null,
                 'completed_at' => $taskData['kanban_status'] === 'done' ? now()->subDays(rand(1, 5)) : null,
-            ]);
-
-            $task->notes()->create([
-                'body' => 'This is a note for task '.$task->title,
-                'user_id' => $users->random()->id,
             ]);
         }
 

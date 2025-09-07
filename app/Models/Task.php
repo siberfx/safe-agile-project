@@ -20,6 +20,7 @@ class Task extends Model
         'assigned_to',
         'due_date',
         'priority',
+        'notes',
         // Agile fields
         'sprint_id',
         'story_points',

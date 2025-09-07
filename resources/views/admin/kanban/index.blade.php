@@ -1321,10 +1321,21 @@ class KanbanBoard {
             this.loadStats();
             
             this.closeModal();
-            this.showSuccess('Task created successfully');
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Task created successfully!',
+                timer: 2000,
+                showConfirmButton: false
+            });
         } catch (error) {
             console.error('Error creating task:', error);
-            this.showError('Failed to create task');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Failed to create task. Please try again.',
+            });
         }
     }
 
@@ -1369,11 +1380,102 @@ class KanbanBoard {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
 
-        // Create edit modal (similar to add modal but with pre-filled data)
-        // Use requestAnimationFrame for better performance
-        requestAnimationFrame(() => {
-            this.showEditModal(task);
+        // Show SweetAlert2 edit modal
+        const { value: formData } = await Swal.fire({
+            title: 'Edit Task',
+            html: `
+                <div class="text-left">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                        <input id="swal-title" class="swal2-input" placeholder="Task title" value="${task.title}" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+                        <select id="swal-priority" class="swal2-input">
+                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
+                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea id="swal-description" class="swal2-textarea" placeholder="Task description">${task.description || ''}</textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                        <textarea id="swal-notes" class="swal2-textarea" placeholder="Additional notes">${task.notes || ''}</textarea>
+                    </div>
+                </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Update Task',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#154273',
+            cancelButtonColor: '#6b7280',
+            preConfirm: () => {
+                const title = document.getElementById('swal-title').value;
+                const priority = document.getElementById('swal-priority').value;
+                const description = document.getElementById('swal-description').value;
+                const notes = document.getElementById('swal-notes').value;
+                
+                if (!title.trim()) {
+                    Swal.showValidationMessage('Title is required');
+                    return false;
+                }
+                
+                return {
+                    title: title.trim(),
+                    priority: priority,
+                    description: description.trim(),
+                    notes: notes.trim()
+                };
+            }
         });
+
+        if (formData) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    const updatedTask = await response.json();
+                    const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+                    if (taskIndex !== -1) {
+                        this.tasks[taskIndex] = updatedTask.data;
+                        this.renderTasks();
+                        this.loadStats();
+                    }
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Task updated successfully!',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Failed to update task. Please try again.',
+                    });
+                }
+            } catch (error) {
+                console.error('Error updating task:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while updating the task.',
+                });
+            }
+        }
     }
 
     showEditModal(task) {
@@ -1567,35 +1669,57 @@ class KanbanBoard {
 
     // Delete Task
     async deleteTask(taskId) {
-        if (!confirm('Are you sure you want to delete this task?')) {
-            return;
-        }
+        const task = this.tasks.find(t => t.id === taskId);
+        const taskTitle = task ? task.title : 'this task';
+        
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: `You are about to delete "${taskTitle}". This action cannot be undone!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        });
 
-        try {
-            const response = await fetch(`/api/tasks/${taskId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                credentials: 'same-origin'
-            });
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    credentials: 'same-origin'
+                });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Remove task from local array
+                this.tasks = this.tasks.filter(t => t.id !== taskId);
+                this.filteredTasks = this.filteredTasks.filter(t => t.id !== taskId);
+                this.renderTasks();
+                this.loadStats();
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'Task has been deleted successfully.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (error) {
+                console.error('Error deleting task:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'Failed to delete task. Please try again.',
+                });
             }
-
-            // Remove task from local array
-            this.tasks = this.tasks.filter(t => t.id !== taskId);
-            this.filteredTasks = this.filteredTasks.filter(t => t.id !== taskId);
-            this.renderTasks();
-            this.loadStats();
-            
-            this.showSuccess('Task deleted successfully');
-        } catch (error) {
-            console.error('Error deleting task:', error);
-            this.showError('Failed to delete task');
         }
     }
 
@@ -1604,40 +1728,76 @@ class KanbanBoard {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
 
-        // Create a simple assign modal
+        // Create user options for SweetAlert2
         const userOptions = this.users.map(user => 
             `<option value="${user.id}" ${user.id == task.assignee_id ? 'selected' : ''}>${user.name}</option>`
         ).join('');
 
-        const assigneeHtml = `
-            <div class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
-                    <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900">Assign Task</h3>
-                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-gray-600 mb-4">Assign "${task.title}" to:</p>
-                        <select id="assignee-select" class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
-                            <option value="">Unassigned</option>
-                            ${userOptions}
-                        </select>
-                        <div class="flex justify-end space-x-3 mt-6">
-                            <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 text-gray-600 hover:text-gray-800">Cancel</button>
-                            <button onclick="kanbanBoard.confirmAssign(${taskId})" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Assign</button>
-                        </div>
-                    </div>
+        const { value: assigneeId } = await Swal.fire({
+            title: 'Assign Task',
+            html: `
+                <div class="text-left">
+                    <p class="text-gray-600 mb-4">Assign "${task.title}" to:</p>
+                    <select id="swal-assignee" class="swal2-input">
+                        <option value="">Unassigned</option>
+                        ${userOptions}
+                    </select>
                 </div>
-            </div>
-        `;
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Assign',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#154273',
+            cancelButtonColor: '#6b7280',
+            preConfirm: () => {
+                return document.getElementById('swal-assignee').value;
+            }
+        });
 
-        // Use DocumentFragment for better performance
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = assigneeHtml;
-        const modalElement = tempDiv.firstElementChild;
-        document.body.appendChild(modalElement);
+        if (assigneeId !== undefined) {
+            try {
+                const response = await fetch(`/api/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ assigned_to: assigneeId || null })
+                });
+
+                if (response.ok) {
+                    const updatedTask = await response.json();
+                    const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+                    if (taskIndex !== -1) {
+                        this.tasks[taskIndex] = updatedTask.data;
+                        this.renderTasks();
+                    }
+                    
+                    const assigneeName = assigneeId ? this.users.find(u => u.id == assigneeId)?.name : 'Unassigned';
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Assigned!',
+                        text: `Task has been assigned to ${assigneeName}.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Failed to assign task. Please try again.',
+                    });
+                }
+            } catch (error) {
+                console.error('Error assigning task:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while assigning the task.',
+                });
+            }
+        }
     }
 
     async confirmAssign(taskId) {

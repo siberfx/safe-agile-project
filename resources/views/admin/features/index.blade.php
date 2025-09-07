@@ -11,10 +11,10 @@
             <p class="text-gray-600 mt-2">System capabilities and functionality</p>
         </div>
         <div class="flex items-center space-x-4">
-            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+            <a href="{{ route('admin.access.features.create') }}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
                 <i class="fas fa-plus mr-2"></i>
                 New Feature
-            </button>
+            </a>
         </div>
     </div>
 
@@ -34,7 +34,11 @@
                         @elseif($feature->status === 'in_progress') bg-yellow-100 text-yellow-800
                         @elseif($feature->status === 'draft') bg-gray-100 text-gray-800
                         @else bg-red-100 text-red-800 @endif">
-                        {{ ucfirst($feature->status) }}
+                        @if($feature->status === 'in_progress')
+                            In Progress
+                        @else
+                            {{ ucfirst($feature->status) }}
+                        @endif
                     </span>
                 </div>
 
@@ -85,15 +89,19 @@
                 <!-- Actions -->
                 <div class="mt-4 flex items-center justify-between">
                     <div class="flex space-x-2">
-                        <button class="text-gray-400 hover:text-gray-600" title="View">
+                        <a href="{{ route('admin.access.features.show', $feature->id) }}" class="text-gray-400 hover:text-gray-600" title="View">
                             <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="text-gray-400 hover:text-gray-600" title="Edit">
+                        </a>
+                        <a href="{{ route('admin.access.features.edit', $feature->id) }}" class="text-gray-400 hover:text-gray-600" title="Edit">
                             <i class="fas fa-pencil"></i>
-                        </button>
-                        <button class="text-gray-400 hover:text-red-600" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        </a>
+                        <form action="{{ route('admin.access.features.destroy', $feature->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this feature?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-gray-400 hover:text-red-600" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -104,10 +112,10 @@
                 <i class="fas fa-puzzle-piece text-gray-300 text-6xl mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No features found</h3>
                 <p class="text-gray-500 mb-6">Create your first feature to get started.</p>
-                <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+                <a href="{{ route('admin.access.features.create') }}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
                     <i class="fas fa-plus mr-2"></i>
                     Create Feature
-                </button>
+                </a>
             </div>
         </div>
         @endforelse

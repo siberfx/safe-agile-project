@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BusinessGoal;
+use App\Models\Program;
 use Illuminate\Http\Request;
 
 class BusinessdoelenController extends Controller
@@ -12,7 +14,8 @@ class BusinessdoelenController extends Controller
      */
     public function index()
     {
-        return view('admin.businessdoelen.index');
+        $businessGoals = BusinessGoal::with(['program', 'epics'])->get();
+        return view('admin.businessdoelen.index', compact('businessGoals'));
     }
 
     /**
@@ -20,7 +23,8 @@ class BusinessdoelenController extends Controller
      */
     public function create()
     {
-        return view('admin.businessdoelen.create');
+        $programs = Program::all();
+        return view('admin.businessdoelen.create', compact('programs'));
     }
 
     /**
@@ -28,9 +32,23 @@ class BusinessdoelenController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Implement store logic
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'value_score' => 'nullable|integer|min:1|max:100',
+            'quarter' => 'nullable|string|in:Q1,Q2,Q3,Q4',
+            'year' => 'nullable|integer|min:2020|max:2030',
+            'status' => 'required|in:draft,in_progress,completed,cancelled',
+            'program_id' => 'required|exists:programs,id',
+            'target_date' => 'nullable|date|after:today',
+            'budget' => 'nullable|numeric|min:0',
+            'prognose' => 'nullable|numeric|min:0',
+        ]);
+
+        BusinessGoal::create($request->all());
+
         return redirect()->route('admin.businessdoelen.index')
-            ->with('success', 'Businessdoel succesvol aangemaakt!');
+            ->with('success', 'Business Goal created successfully!');
     }
 
     /**
@@ -38,7 +56,8 @@ class BusinessdoelenController extends Controller
      */
     public function show(string $id)
     {
-        return view('admin.businessdoelen.show', compact('id'));
+        $businessGoal = BusinessGoal::with(['program', 'epics.features.userStories'])->findOrFail($id);
+        return view('admin.businessdoelen.show', compact('businessGoal'));
     }
 
     /**
@@ -46,7 +65,9 @@ class BusinessdoelenController extends Controller
      */
     public function edit(string $id)
     {
-        return view('admin.businessdoelen.edit', compact('id'));
+        $businessGoal = BusinessGoal::findOrFail($id);
+        $programs = Program::all();
+        return view('admin.businessdoelen.edit', compact('businessGoal', 'programs'));
     }
 
     /**
@@ -54,9 +75,25 @@ class BusinessdoelenController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // TODO: Implement update logic
+        $businessGoal = BusinessGoal::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'value_score' => 'nullable|integer|min:1|max:100',
+            'quarter' => 'nullable|string|in:Q1,Q2,Q3,Q4',
+            'year' => 'nullable|integer|min:2020|max:2030',
+            'status' => 'required|in:draft,in_progress,completed,cancelled',
+            'program_id' => 'required|exists:programs,id',
+            'target_date' => 'nullable|date',
+            'budget' => 'nullable|numeric|min:0',
+            'prognose' => 'nullable|numeric|min:0',
+        ]);
+
+        $businessGoal->update($request->all());
+
         return redirect()->route('admin.businessdoelen.index')
-            ->with('success', 'Businessdoel succesvol bijgewerkt!');
+            ->with('success', 'Business Goal updated successfully!');
     }
 
     /**
@@ -64,8 +101,10 @@ class BusinessdoelenController extends Controller
      */
     public function destroy(string $id)
     {
-        // TODO: Implement delete logic
+        $businessGoal = BusinessGoal::findOrFail($id);
+        $businessGoal->delete();
+
         return redirect()->route('admin.businessdoelen.index')
-            ->with('success', 'Businessdoel succesvol verwijderd!');
+            ->with('success', 'Business Goal deleted successfully!');
     }
 }

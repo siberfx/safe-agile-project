@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             AdminSeeder::class,
             ProgramSeeder::class,
+            BusinessGoalSeeder::class,
+            EpicSeeder::class,
+            FeatureSeeder::class,
             ProjectSeeder::class,
             TaskSeeder::class,
         ]);

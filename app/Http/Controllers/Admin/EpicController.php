@@ -32,9 +32,21 @@ class EpicController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Implement store logic
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'business_goal_id' => 'required|exists:business_goals,id',
+            'priority' => 'required|in:low,medium,high,critical',
+            'expected_value' => 'nullable|numeric|min:0',
+            'status' => 'required|in:draft,in_progress,completed,cancelled',
+            'story_points' => 'nullable|integer|min:0|max:1000',
+            'target_date' => 'nullable|date|after:today',
+        ]);
+
+        Epic::create($request->all());
+
         return redirect()->route('admin.access.epics.index')
-            ->with('success', 'Epic succesvol aangemaakt!');
+            ->with('success', 'Epic created successfully!');
     }
 
     /**
@@ -61,9 +73,23 @@ class EpicController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // TODO: Implement update logic
+        $epic = Epic::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'business_goal_id' => 'required|exists:business_goals,id',
+            'priority' => 'required|in:low,medium,high,critical',
+            'expected_value' => 'nullable|numeric|min:0',
+            'status' => 'required|in:draft,in_progress,completed,cancelled',
+            'story_points' => 'nullable|integer|min:0|max:1000',
+            'target_date' => 'nullable|date',
+        ]);
+
+        $epic->update($request->all());
+
         return redirect()->route('admin.access.epics.index')
-            ->with('success', 'Epic succesvol bijgewerkt!');
+            ->with('success', 'Epic updated successfully!');
     }
 
     /**
@@ -71,8 +97,10 @@ class EpicController extends Controller
      */
     public function destroy(string $id)
     {
-        // TODO: Implement delete logic
+        $epic = Epic::findOrFail($id);
+        $epic->delete();
+
         return redirect()->route('admin.access.epics.index')
-            ->with('success', 'Epic succesvol verwijderd!');
+            ->with('success', 'Epic deleted successfully!');
     }
 }

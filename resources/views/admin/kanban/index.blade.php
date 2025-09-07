@@ -1515,61 +1515,138 @@ class KanbanBoard {
     async editTask(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
+        
+        // Debug: Log task data
+        console.log('Edit Task - Current task:', task);
+        console.log('Edit Task - Current kanban_status:', task.kanban_status);
 
-        // Show SweetAlert2 edit modal
-        const { value: formData } = await Swal.fire({
-            title: 'Edit Task',
-            html: `
-                <div class="text-left">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                        <input id="swal-title" class="swal2-input" placeholder="Task title" value="${task.title}" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
-                        <select id="swal-priority" class="swal2-input">
-                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
-                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
-                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
-                        </select>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                        <textarea id="swal-description" class="swal2-textarea" placeholder="Task description">${task.description || ''}</textarea>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                        <textarea id="swal-notes" class="swal2-textarea" placeholder="Additional notes">${task.notes || ''}</textarea>
+        // Create edit modal HTML
+        const editModalHTML = `
+            <div id="edit-task-modal" class="fixed inset-0 bg-black/30 z-50" style="will-change: auto;">
+                <div class="flex items-center justify-center min-h-screen p-4">
+                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style="will-change: auto;">
+                        <!-- Modal Header -->
+                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h3 class="text-xl font-semibold text-gray-900">Edit Task</h3>
+                            <button onclick="document.getElementById('edit-task-modal').remove()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        
+                        <!-- Modal Body -->
+                        <form id="edit-task-form" class="p-6">
+                            <div class="space-y-6">
+                                <!-- Title -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Task Title *</label>
+                                    <input type="text" id="edit-title" required value="${this.escapeHtml(task.title)}"
+                                           class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30"
+                                           placeholder="Enter task title">
+                                </div>
+                                
+                                <!-- Description -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                    <textarea id="edit-description" rows="4" 
+                                              class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 resize-none"
+                                              placeholder="Describe the task in detail">${this.escapeHtml(task.description || '')}</textarea>
+                                </div>
+                                
+                                <!-- Priority and Story Points -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+                                        <select id="edit-priority" required 
+                                                class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
+                                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
+                                        <input type="number" id="edit-story-points" min="0" max="100" value="${task.story_points || ''}"
+                                               class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30"
+                                               placeholder="0">
+                                    </div>
+                                </div>
+                                
+                                <!-- Status and Due Date -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                        <select id="edit-status" 
+                                                class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                            <option value="todo" ${(task.kanban_status || task.status) === 'todo' ? 'selected' : ''}>To Do</option>
+                                            <option value="in_progress" ${(task.kanban_status || task.status) === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                            <option value="review" ${(task.kanban_status || task.status) === 'review' ? 'selected' : ''}>Review</option>
+                                            <option value="done" ${(task.kanban_status || task.status) === 'done' ? 'selected' : ''}>Done</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                                        <input type="date" id="edit-due-date" value="${task.due_date || ''}"
+                                               class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                    </div>
+                                </div>
+                                
+                                <!-- Assignee -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+                                    <select id="edit-assignee" 
+                                            class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                        <option value="">Select Assignee</option>
+                                        ${this.users.map(user => 
+                                            `<option value="${user.id}" ${user.id == task.assigned_to ? 'selected' : ''}>${this.escapeHtml(user.name)}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                
+                                <!-- Notes -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                                    <textarea id="edit-notes" rows="3" 
+                                              class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 resize-none"
+                                              placeholder="Additional notes or comments">${this.escapeHtml(task.notes || '')}</textarea>
+                                </div>
+                            </div>
+                            
+                            <!-- Modal Footer -->
+                            <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+                                <button type="button" onclick="document.getElementById('edit-task-modal').remove()" 
+                                        class="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium">
+                                    Cancel
+                                </button>
+                                <button type="submit" 
+                                        class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium">
+                                    <i class="fas fa-save mr-2"></i>
+                                    Update Task
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            `,
-            focusConfirm: false,
-            showCancelButton: true,
-            confirmButtonText: 'Update Task',
-            cancelButtonText: 'Cancel',
-            confirmButtonColor: '#154273',
-            cancelButtonColor: '#6b7280',
-            preConfirm: () => {
-                const title = document.getElementById('swal-title').value;
-                const priority = document.getElementById('swal-priority').value;
-                const description = document.getElementById('swal-description').value;
-                const notes = document.getElementById('swal-notes').value;
-                
-                if (!title.trim()) {
-                    Swal.showValidationMessage('Title is required');
-                    return false;
-                }
-                
-                return {
-                    title: title.trim(),
-                    priority: priority,
-                    description: description.trim(),
-                    notes: notes.trim()
-                };
-            }
-        });
+            </div>
+        `;
 
-        if (formData) {
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', editModalHTML);
+
+        // Setup form submission
+        document.getElementById('edit-task-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('edit-title').value,
+                description: document.getElementById('edit-description').value,
+                priority: document.getElementById('edit-priority').value,
+                story_points: document.getElementById('edit-story-points').value,
+                kanban_status: document.getElementById('edit-status').value,
+                due_date: document.getElementById('edit-due-date').value,
+                assigned_to: document.getElementById('edit-assignee').value,
+                notes: document.getElementById('edit-notes').value
+            };
+
             try {
                 const response = await fetch(`/api/tasks/${taskId}`, {
                     method: 'PUT',
@@ -1585,10 +1662,23 @@ class KanbanBoard {
                     const taskIndex = this.tasks.findIndex(t => t.id === taskId);
                     if (taskIndex !== -1) {
                         this.tasks[taskIndex] = updatedTask.data;
-                        this.renderTasks();
-                        this.loadStats();
                     }
                     
+                    // Update filtered tasks if filters are active
+                    if (this.filteredTasks.length > 0) {
+                        const filteredIndex = this.filteredTasks.findIndex(t => t.id === taskId);
+                        if (filteredIndex !== -1) {
+                            this.filteredTasks[filteredIndex] = updatedTask.data;
+                        }
+                    }
+                    
+                    this.renderTasks();
+                    this.loadStats();
+                    
+                    // Close modal
+                    document.getElementById('edit-task-modal').remove();
+                    
+                    // Show success message
                     Swal.fire({
                         icon: 'success',
                         title: 'Success!',
@@ -1611,197 +1701,17 @@ class KanbanBoard {
                     text: 'An error occurred while updating the task.',
                 });
             }
-        }
+        });
+
+        // Setup backdrop click
+        document.getElementById('edit-task-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'edit-task-modal') {
+                document.getElementById('edit-task-modal').remove();
+            }
+        });
     }
 
-    showEditModal(task) {
-        // Create edit modal similar to add modal but with pre-filled data
-        const editModalHtml = `
-            <div id="edit-task-modal" class="fixed inset-0 bg-black/30 z-50" style="will-change: auto;">
-                <div class="flex items-center justify-center min-h-screen p-4">
-                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style="will-change: auto;">
-                        <!-- Modal Header -->
-                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h3 class="text-xl font-semibold text-gray-900">Edit Task</h3>
-                            <button onclick="document.getElementById('edit-task-modal').remove()" class="text-gray-400 hover:text-gray-600 ">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
-                        
-                        <!-- Modal Body -->
-                        <form id="edit-task-form" class="p-6">
-                            <div class="space-y-6">
-                                <!-- Title -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Task Title *</label>
-                                    <input type="text" name="title" required value="${this.escapeHtml(task.title)}"
-                                           class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 "
-                                           placeholder="Enter task title">
-                                </div>
-                                
-                                <!-- Description -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                                    <textarea name="description" rows="4" 
-                                              class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30  resize-none"
-                                              placeholder="Describe the task in detail">${this.escapeHtml(task.description || '')}</textarea>
-                                </div>
-                                
-                                <!-- Priority and Story Points -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
-                                        <select name="priority" required 
-                                                class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
-                                            <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
-                                            <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
-                                            <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
-                                        <input type="number" name="story_points" min="0" max="100" value="${task.story_points || ''}"
-                                               class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 "
-                                               placeholder="0">
-                                    </div>
-                                </div>
-                                
-                                <!-- Status and Due Date -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                                        <select name="kanban_status" 
-                                                class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 ">
-                                            <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
-                                            <option value="in_progress" ${task.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
-                                            <option value="review" ${task.status === 'review' ? 'selected' : ''}>Review</option>
-                                            <option value="done" ${task.status === 'done' ? 'selected' : ''}>Done</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                                        <input type="date" name="due_date" value="${task.due_date || ''}"
-                                               class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 ">
-                                    </div>
-                                </div>
-                                
-                                <!-- Assignee -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
-                                    <select name="assigned_to" 
-                                            class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 ">
-                                        <option value="">Select Assignee</option>
-                                        ${this.users.map(user => 
-                                            `<option value="${user.id}" ${user.id == task.assignee_id ? 'selected' : ''}>${this.escapeHtml(user.name)}</option>`
-                                        ).join('')}
-                                    </select>
-                                </div>
-                                
-                                <!-- Notes -->
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                                    <textarea name="notes" rows="3" 
-                                              class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30  resize-none"
-                                              placeholder="Additional notes or comments">${this.escapeHtml(task.notes || '')}</textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Modal Footer -->
-                            <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                                <button type="button" onclick="document.getElementById('edit-task-modal').remove()" 
-                                        class="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium ">
-                                    Cancel
-                                </button>
-                                <button type="submit" 
-                                        class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium ">
-                                    <i class="fas fa-save mr-2"></i>
-                                    Update Task
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        `;
 
-        // Use DocumentFragment for better performance
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = editModalHtml;
-        const modalElement = tempDiv.firstElementChild;
-        document.body.appendChild(modalElement);
-
-        // Add form submit handler (only once)
-        const editForm = document.getElementById('edit-task-form');
-        if (editForm && !editForm.hasAttribute('data-listener-added')) {
-            editForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.updateTaskFromModal(task.id);
-            });
-            editForm.setAttribute('data-listener-added', 'true');
-        }
-
-        // Add backdrop click handler (only once)
-        const editModal = document.getElementById('edit-task-modal');
-        if (editModal && !editModal.hasAttribute('data-listener-added')) {
-            editModal.addEventListener('click', (e) => {
-                if (e.target.id === 'edit-task-modal') {
-                    document.getElementById('edit-task-modal').remove();
-                }
-            });
-            editModal.setAttribute('data-listener-added', 'true');
-        }
-    }
-
-    async updateTaskFromModal(taskId) {
-        const form = document.getElementById('edit-task-form');
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-
-        try {
-            const response = await fetch(`/api/tasks/${taskId}`, {
-                method: 'PUT',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            // Update task in local array
-            const taskIndex = this.tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-                this.tasks[taskIndex] = result.data;
-            }
-
-            // Update filtered tasks if filters are active
-            if (this.filteredTasks.length > 0) {
-                const filteredIndex = this.filteredTasks.findIndex(t => t.id === taskId);
-                if (filteredIndex !== -1) {
-                    this.filteredTasks[filteredIndex] = result.data;
-                }
-            }
-
-            this.renderTasks();
-            this.showSuccess('Task updated successfully');
-            
-            // Close modal safely
-            const editModal = document.getElementById('edit-task-modal');
-            if (editModal) {
-                editModal.remove();
-            }
-        } catch (error) {
-            console.error('Error updating task:', error);
-            this.showError('Failed to update task');
-        }
-    }
 
     // Delete Task
     async deleteTask(taskId) {
@@ -1936,55 +1846,6 @@ class KanbanBoard {
         }
     }
 
-    async confirmAssign(taskId) {
-        const select = document.getElementById('assignee-select');
-        const assigneeId = select.value;
-
-        try {
-            const response = await fetch(`/api/tasks/${taskId}`, {
-                method: 'PUT',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ assigned_to: assigneeId || null })
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            
-            // Update task in local array
-            const taskIndex = this.tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-                this.tasks[taskIndex] = result.data;
-            }
-
-            // Update filtered tasks if filters are active
-            if (this.filteredTasks.length > 0) {
-                const filteredIndex = this.filteredTasks.findIndex(t => t.id === taskId);
-                if (filteredIndex !== -1) {
-                    this.filteredTasks[filteredIndex] = result.data;
-                }
-            }
-
-            this.renderTasks();
-            this.showSuccess('Task assigned successfully');
-            
-            // Close modal safely
-            const assignModal = document.querySelector('.fixed.inset-0');
-            if (assignModal) {
-                assignModal.remove();
-            }
-        } catch (error) {
-            console.error('Error assigning task:', error);
-            this.showError('Failed to assign task');
-        }
-    }
 
     // Update Task (generic method)
     async updateTask(taskId, data) {

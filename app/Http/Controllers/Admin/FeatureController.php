@@ -32,9 +32,21 @@ class FeatureController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Implement store logic
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'epic_id' => 'required|exists:epics,id',
+            'pi' => 'nullable|string|max:255',
+            'sprint' => 'nullable|string|max:255',
+            'status' => 'required|in:draft,in_progress,completed,cancelled',
+            'story_points' => 'nullable|integer|min:0|max:1000',
+            'target_date' => 'nullable|date|after:today',
+        ]);
+
+        Feature::create($request->all());
+
         return redirect()->route('admin.access.features.index')
-            ->with('success', 'Feature succesvol aangemaakt!');
+            ->with('success', 'Feature created successfully!');
     }
 
     /**
@@ -61,9 +73,23 @@ class FeatureController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        // TODO: Implement update logic
+        $feature = Feature::findOrFail($id);
+        
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'epic_id' => 'required|exists:epics,id',
+            'pi' => 'nullable|string|max:255',
+            'sprint' => 'nullable|string|max:255',
+            'status' => 'required|in:draft,in_progress,completed,cancelled',
+            'story_points' => 'nullable|integer|min:0|max:1000',
+            'target_date' => 'nullable|date|after:today',
+        ]);
+
+        $feature->update($request->all());
+
         return redirect()->route('admin.access.features.index')
-            ->with('success', 'Feature succesvol bijgewerkt!');
+            ->with('success', 'Feature updated successfully!');
     }
 
     /**
@@ -71,8 +97,10 @@ class FeatureController extends Controller
      */
     public function destroy(string $id)
     {
-        // TODO: Implement delete logic
+        $feature = Feature::findOrFail($id);
+        $feature->delete();
+
         return redirect()->route('admin.access.features.index')
-            ->with('success', 'Feature succesvol verwijderd!');
+            ->with('success', 'Feature deleted successfully!');
     }
 }

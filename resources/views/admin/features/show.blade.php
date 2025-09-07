@@ -28,7 +28,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="text-sm font-medium text-gray-500">Status</label>
-                        <p class="text-sm text-gray-900">{{ ucfirst($feature->status) }}</p>
+                        <p class="text-sm text-gray-900">
+                            @if($feature->status === 'in_progress')
+                                In Progress
+                            @else
+                                {{ ucfirst($feature->status) }}
+                            @endif
+                        </p>
                     </div>
                     <div>
                         <label class="text-sm font-medium text-gray-500">Story Points</label>

@@ -11,10 +11,10 @@
             <p class="text-gray-600 mt-2">Strategic business objectives and value realization</p>
         </div>
         <div class="flex items-center space-x-4">
-            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+            <a href="{{ route('admin.access.business-goals.create') }}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
                 <i class="fas fa-plus mr-2"></i>
                 New Business Goal
-            </button>
+            </a>
         </div>
     </div>
 
@@ -46,20 +46,28 @@
                                 @elseif($goal->status === 'in_progress') bg-yellow-500
                                 @elseif($goal->status === 'draft') bg-gray-500
                                 @else bg-red-500 @endif"></span>
-                            {{ ucfirst($goal->status) }}
+                            @if($goal->status === 'in_progress')
+                                In Progress
+                            @else
+                                {{ ucfirst($goal->status) }}
+                            @endif
                         </span>
                         
                         <!-- Action Buttons -->
                         <div class="flex items-center space-x-1">
-                            <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Commentaar toevoegen">
-                                <i class="fas fa-comment text-sm"></i>
-                            </button>
-                            <button class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Bewerken">
+                            <a href="{{ route('admin.access.business-goals.show', $goal->id) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="View Details">
+                                <i class="fas fa-eye text-sm"></i>
+                            </a>
+                            <a href="{{ route('admin.access.business-goals.edit', $goal->id) }}" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200" title="Edit">
                                 <i class="fas fa-pencil text-sm"></i>
-                            </button>
-                            <button class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200" title="Verwijderen">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
+                            </a>
+                            <form action="{{ route('admin.access.business-goals.destroy', $goal->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this business goal?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200" title="Delete">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -138,10 +146,10 @@
             <i class="fas fa-bullseye text-gray-300 text-6xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-900 mb-2">No business goals found</h3>
             <p class="text-gray-500 mb-6">Create your first business goal to get started.</p>
-            <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
+            <a href="{{ route('admin.access.business-goals.create') }}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90">
                 <i class="fas fa-plus mr-2"></i>
                 Create Business Goal
-            </button>
+            </a>
         </div>
         @endforelse
     </div>

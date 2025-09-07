@@ -10,38 +10,56 @@
             <p class="text-gray-600 mt-1">Update feature information</p>
         </div>
         
-        <form class="p-6 space-y-6">
+        <form action="{{ route('admin.access.features.update', $feature->id) }}" method="POST" class="p-6 space-y-6">
+            @csrf
+            @method('PUT')
+            
             <!-- Basic Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                    <input type="text" value="{{ $feature->title ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Feature title">
+                    <input type="text" name="title" value="{{ old('title', $feature->title) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('title') border-red-500 @enderror" placeholder="Feature title" required>
+                    @error('title')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Epic *</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                    <select name="epic_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('epic_id') border-red-500 @enderror" required>
                         <option value="">Select Epic</option>
                         @foreach($epics as $epic)
-                            <option value="{{ $epic->id }}" {{ ($feature->epic_id ?? '') == $epic->id ? 'selected' : '' }}>{{ $epic->title }}</option>
+                            <option value="{{ $epic->id }}" {{ old('epic_id', $feature->epic_id) == $epic->id ? 'selected' : '' }}>{{ $epic->title }}</option>
                         @endforeach
                     </select>
+                    @error('epic_id')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Describe the feature's functionality">{{ $feature->description ?? '' }}</textarea>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('description') border-red-500 @enderror" placeholder="Describe the feature's functionality">{{ old('description', $feature->description) }}</textarea>
+                @error('description')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- PI and Sprint -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Program Increment (PI)</label>
-                    <input type="text" value="{{ $feature->pi ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="e.g., PI-1">
+                    <input type="text" name="pi" value="{{ old('pi', $feature->pi) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('pi') border-red-500 @enderror" placeholder="e.g., PI-1">
+                    @error('pi')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sprint</label>
-                    <input type="text" value="{{ $feature->sprint ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="e.g., Sprint 1">
+                    <input type="text" name="sprint" value="{{ old('sprint', $feature->sprint) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('sprint') border-red-500 @enderror" placeholder="e.g., Sprint 1">
+                    @error('sprint')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -49,23 +67,33 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
-                    <input type="number" value="{{ $feature->story_points ?? '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="0">
+                    <input type="number" name="story_points" value="{{ old('story_points', $feature->story_points) }}" min="0" max="1000" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('story_points') border-red-500 @enderror" placeholder="0">
+                    @error('story_points')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                        <option value="draft" {{ ($feature->status ?? '') === 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="in_progress" {{ ($feature->status ?? '') === 'in_progress' ? 'selected' : '' }}>In Progress</option>
-                        <option value="completed" {{ ($feature->status ?? '') === 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="cancelled" {{ ($feature->status ?? '') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('status') border-red-500 @enderror" required>
+                        <option value="">Select Status</option>
+                        <option value="draft" {{ old('status', $feature->status) === 'draft' ? 'selected' : '' }}>Draft</option>
+                        <option value="in_progress" {{ old('status', $feature->status) === 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="completed" {{ old('status', $feature->status) === 'completed' ? 'selected' : '' }}>Completed</option>
+                        <option value="cancelled" {{ old('status', $feature->status) === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
+                    @error('status')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
             <!-- Target Date -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Target Date</label>
-                <input type="date" value="{{ $feature->target_date ? $feature->target_date->format('Y-m-d') : '' }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                <input type="date" name="target_date" value="{{ old('target_date', $feature->target_date ? $feature->target_date->format('Y-m-d') : '') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent @error('target_date') border-red-500 @enderror">
+                @error('target_date')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Actions -->

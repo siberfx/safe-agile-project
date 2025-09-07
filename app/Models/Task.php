@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Traits\NoteTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @mixin IdeHelperTask
+ */
 class Task extends Model
 {
+    use NoteTrait;
     protected $fillable = [
         'title',
         'description',
@@ -27,7 +32,6 @@ class Task extends Model
         'kanban_status',
         'kanban_order',
         'tags',
-        'notes',
         'started_at',
         'completed_at',
     ];

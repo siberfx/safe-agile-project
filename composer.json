@@ -63,6 +63,12 @@
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite'"
         ],
+        "ide-helper": [
+            "@php artisan ide-helper:eloquent",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
+            "@php artisan ide-helper:models -M"
+        ],
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test"

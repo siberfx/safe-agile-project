@@ -2,11 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Traits\NoteTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @mixin IdeHelperProgram
+ */
 class Program extends Model
 {
+    use NoteTrait;
+
     protected $fillable = [
         'title',
         'description',

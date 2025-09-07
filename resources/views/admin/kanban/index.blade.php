@@ -330,6 +330,148 @@
 </div>
 @endsection
 
+@push('styles')
+    <style>
+        .kanban-column.drag-over {
+            background-color: #f8fafc;
+            outline: 2px dashed #154273;
+            outline-offset: -2px;
+        }
+
+        .task-card {
+            transition: all 0.2s ease-out;
+            cursor: grab;
+        }
+
+        .task-card:active {
+            cursor: grabbing;
+        }
+
+        .task-card:hover:not(.dragging) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-card.dragging {
+            opacity: 0.9;
+            transform: scale(0.9);
+            transition: none !important;
+            z-index: 1000;
+            box-shadow: 0 15px 30px rgba(21, 66, 115, 0.25) !important;
+            border: 2px solid #154273 !important;
+            cursor: grabbing !important;
+        }
+
+        .drop-indicator {
+            animation: pulse 2s ease-in-out infinite;
+            backdrop-filter: blur(1px);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.7;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.9;
+                transform: scale(1.01);
+            }
+        }
+
+        /* Form elements performance */
+        select, input, textarea {
+            transition: none !important;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: none;
+        }
+
+        /* Custom select styling for better performance */
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        /* Modal performance */
+        #edit-task-modal, #add-task-modal {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+            will-change: transform;
+        }
+
+        /* Select dropdown performance */
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(21, 66, 115, 0.2);
+        }
+
+        /* Disable browser default animations */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        select, input, textarea {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Primary color customizations */
+        .bg-primary {
+            background-color: #154273 !important;
+        }
+
+        .text-primary {
+            color: #154273 !important;
+        }
+
+        .border-primary {
+            border-color: #154273 !important;
+        }
+
+        .bg-primary\/10 {
+            background-color: rgba(21, 66, 115, 0.1) !important;
+        }
+
+        .border-primary\/20 {
+            border-color: rgba(21, 66, 115, 0.2) !important;
+        }
+
+        .hover\:border-primary\/20:hover {
+            border-color: rgba(21, 66, 115, 0.2) !important;
+        }
+
+        /* Enhanced shadows */
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .shadow-xl {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Smooth animations - exclude dragging elements */
+        *:not(.dragging) {
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Disable transitions during drag */
+        .dragging,
+        .dragging * {
+            transition: none !important;
+        }
+    </style>
+@endpush
+
 @push('scripts')
 <script>
 class KanbanBoard {
@@ -1897,144 +2039,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
 });
 </script>
-
-<style>
-.kanban-column.drag-over {
-    background-color: #f8fafc;
-    outline: 2px dashed #154273;
-    outline-offset: -2px;
-}
-
-.task-card {
-    transition: all 0.2s ease-out;
-    cursor: grab;
-}
-
-.task-card:active {
-    cursor: grabbing;
-}
-
-.task-card:hover:not(.dragging) {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.task-card.dragging {
-    opacity: 0.9;
-    transform: scale(0.9);
-    transition: none !important;
-    z-index: 1000;
-    box-shadow: 0 15px 30px rgba(21, 66, 115, 0.25) !important;
-    border: 2px solid #154273 !important;
-    cursor: grabbing !important;
-}
-
-.drop-indicator {
-    animation: pulse 2s ease-in-out infinite;
-    backdrop-filter: blur(1px);
-}
-
-@keyframes pulse {
-    0%, 100% {
-        opacity: 0.7;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.9;
-        transform: scale(1.01);
-    }
-}
-
-/* Form elements performance */
-select, input, textarea {
-    transition: none !important;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: none;
-}
-
-/* Custom select styling for better performance */
-select {
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    padding-right: 40px;
-}
-
-/* Modal performance */
-#edit-task-modal, #add-task-modal {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-    will-change: transform;
-}
-
-/* Select dropdown performance */
-select:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(21, 66, 115, 0.2);
-}
-
-/* Disable browser default animations */
-* {
-    -webkit-tap-highlight-color: transparent;
-}
-
-select, input, textarea {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-/* Primary color customizations */
-.bg-primary {
-    background-color: #154273 !important;
-}
-
-.text-primary {
-    color: #154273 !important;
-}
-
-.border-primary {
-    border-color: #154273 !important;
-}
-
-.bg-primary\/10 {
-    background-color: rgba(21, 66, 115, 0.1) !important;
-}
-
-.border-primary\/20 {
-    border-color: rgba(21, 66, 115, 0.2) !important;
-}
-
-.hover\:border-primary\/20:hover {
-    border-color: rgba(21, 66, 115, 0.2) !important;
-}
-
-/* Enhanced shadows */
-.shadow-lg {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-}
-
-.shadow-xl {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Smooth animations - exclude dragging elements */
-*:not(.dragging) {
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Disable transitions during drag */
-.dragging,
-.dragging * {
-    transition: none !important;
-}
-</style>
 @endpush

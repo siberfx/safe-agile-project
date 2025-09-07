@@ -13,15 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Only seed basic data for the main database (landlord system)
+        // Tenant-specific data will be seeded when tenants are created
         $this->call([
             PermissionSeeder::class,
-            AdminSeeder::class,
-            ProgramSeeder::class,
-            BusinessGoalSeeder::class,
-            EpicSeeder::class,
-            FeatureSeeder::class,
-            ProjectSeeder::class,
-            TaskSeeder::class,
         ]);
     }
 }

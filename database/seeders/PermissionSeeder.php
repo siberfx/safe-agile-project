@@ -73,7 +73,7 @@ class PermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
+            Permission::on('mysql')->firstOrCreate([
                 'name' => $permission,
                 'guard_name' => Variable::GUARD_NAME
             ]);
@@ -81,14 +81,14 @@ class PermissionSeeder extends Seeder
 
         // Create default roles
         foreach (Variable::DEFAULT_ROLES as $roleName => $roleDisplayName) {
-            $role = Role::firstOrCreate([
+            $role = Role::on('mysql')->firstOrCreate([
                 'name' => $roleName,
                 'guard_name' => Variable::GUARD_NAME
             ]);
 
             // Assign all permissions to super_admin
             if ($roleName === Variable::SUPER_ADMIN_ROLE) {
-                $role->syncPermissions(Permission::all());
+                $role->syncPermissions(Permission::on('mysql')->get());
             }
             // Assign limited permissions to admin
             elseif ($roleName === Variable::ADMIN_ROLE) {
@@ -108,7 +108,7 @@ class PermissionSeeder extends Seeder
         }
 
         // Assign super_admin role to existing admin users
-        $adminUsers = \App\Models\User::whereIn('email', array_column(Variable::DEFAULT_SA_EMAILS, 'email'))->get();
+        $adminUsers = \App\Models\User::on('mysql')->whereIn('email', array_column(Variable::DEFAULT_SA_EMAILS, 'email'))->get();
         foreach ($adminUsers as $user) {
             if (!$user->hasRole(Variable::SUPER_ADMIN_ROLE)) {
                 $user->assignRole(Variable::SUPER_ADMIN_ROLE);

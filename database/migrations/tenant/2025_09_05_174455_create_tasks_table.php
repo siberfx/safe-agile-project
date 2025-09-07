@@ -22,7 +22,7 @@ return new class extends Migration
             
             // Project and assignment
             $table->foreignId('project_id')->nullable()->constrained()->onDelete('set null');
-            $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');
+            $table->unsignedBigInteger('assigned_to')->nullable();
             
             // Agile fields
             $table->foreignId('sprint_id')->nullable()->constrained()->onDelete('set null');

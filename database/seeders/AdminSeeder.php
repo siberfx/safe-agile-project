@@ -14,12 +14,12 @@ class AdminSeeder extends Seeder
      */
     public function run(): void
     {
-        if (User::query()->count() > 0) {
+        if (User::on('mysql')->count() > 0) {
             return; // Skip seeding if users already exist
         }
 
         foreach (Variable::DEFAULT_SA_EMAILS as $data) {
-            $user = User::query()->create([
+            $user = User::on('mysql')->create([
                 'name' => $data['name'],
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),

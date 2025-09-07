@@ -70,6 +70,31 @@ class LoginController extends Controller
                 return redirect()->route('admin.two-factor.challenge');
             }
 
+            // Check if user has multiple teams to choose from
+            $userTeams = $user->teams()->get();
+            
+            if ($userTeams->count() > 1) {
+                // Store user info in session for team selection
+                $request->session()->put([
+                    'team_selection.user_id' => $user->id,
+                    'team_selection.remember' => $request->filled('remember'),
+                ]);
+
+                // Logout the user temporarily
+                $this->guard()->logout();
+
+                return redirect()->route('admin.team.select');
+            } elseif ($userTeams->count() === 1) {
+                // Auto-select the single team
+                $team = $userTeams->first();
+                $request->session()->put('selected_team_id', $team->id);
+                $request->session()->put('selected_tenant_id', $team->tenant_id);
+            } else {
+                // User has no teams - this shouldn't happen in normal flow
+                $this->guard()->logout();
+                return redirect()->route('admin.login')->withErrors(['email' => 'You are not assigned to any teams. Please contact your administrator.']);
+            }
+
             return $this->sendLoginResponse($request);
         }
 

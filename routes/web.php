@@ -1,19 +1,30 @@
 <?php
 
-Route::redirect('/', '/admin');
-
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SystemController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\TwoFactorController;
+use App\Http\Controllers\LandlordRegistrationController;
+use App\Http\Controllers\TeamManagementController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/admin')->name('home');
-// Admin Routes
+// Landing page and landlord registration routes (no tenant middleware)
+Route::get('/', [LandlordRegistrationController::class, 'showLandingPage'])->name('home');
+Route::get('/create-platform', [LandlordRegistrationController::class, 'showRegistrationForm'])->name('landlord.register.form');
+Route::post('/create-platform', [LandlordRegistrationController::class, 'register'])->name('landlord.register');
+Route::get('/success/{tenant:slug}', [LandlordRegistrationController::class, 'success'])->name('landlord.success');
 
-Route::group(['as' => 'admin.'], function () {
+// Team Management Routes (after registration)
+Route::get('/team/{tenant}/manage', [TeamManagementController::class, 'manage'])->name('landlord.team.manage');
+Route::post('/team/{tenant}/add', [TeamManagementController::class, 'addMember'])->name('landlord.team.add');
+Route::put('/team/{tenant}/member/{user}', [TeamManagementController::class, 'updateMember'])->name('landlord.team.update');
+Route::delete('/team/{tenant}/member/{user}', [TeamManagementController::class, 'removeMember'])->name('landlord.team.remove');
+Route::post('/team/{tenant}/complete', [TeamManagementController::class, 'completeSetup'])->name('landlord.team.complete');
+
+// Admin Routes - Apply tenant middleware to all admin routes
+Route::group(['as' => 'admin.', 'middleware' => 'tenant'], function () {
 
     // Guest routes (no auth required)
     Route::get('login', function () {
@@ -31,6 +42,10 @@ Route::group(['as' => 'admin.'], function () {
     // Authentication POST routes
     Route::post('login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login.post');
     Route::post('register', [App\Http\Controllers\Auth\RegisterController::class, 'register'])->name('register.post');
+
+    // Team Selection Routes (guest accessible)
+    Route::get('team-select', [App\Http\Controllers\Auth\TeamSelectionController::class, 'show'])->name('team.select');
+    Route::post('team-select', [App\Http\Controllers\Auth\TeamSelectionController::class, 'select'])->name('team.select.post');
 
     // Two-Factor Authentication Routes (guest accessible)
     Route::get('two-factor-challenge', [TwoFactorController::class, 'show'])->name('two-factor.challenge');
@@ -56,17 +71,18 @@ Route::group(['as' => 'admin.'], function () {
     Route::post('reset-password', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.store');
     Route::post('logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
-    Route::post('user/confirm-password', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('password.confirm');
+    Route::post('user/confirm-password', [App\Http\Controllers\Auth\ConfirmPasswordController::class, 'confirm'])->name('user.password.confirm');
 
-    // not exists
-    Route::post('email/verification-notification', [App\Http\Controllers\Auth\EmailVerificationController::class, 'resend'])->name('verification.send');
     Route::put('user/password', [App\Http\Controllers\Auth\PasswordController::class, 'update'])->name('password.update');
-    Route::put('user/profile-information', [App\Http\Controllers\Auth\ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('user/profile', [App\Http\Controllers\Auth\ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::put('user/profile-information', [App\Http\Controllers\Auth\ProfileController::class, 'update'])->name('user.profile.update');
+    Route::delete('user/profile', [App\Http\Controllers\Auth\ProfileController::class, 'destroy'])->name('user.profile.destroy');
 
     // Protected Admin Routes (require authentication)
     Route::middleware('admin')->group(function () {
-        Route::get('/', [SystemController::class, 'index'])->name('index');
+        Route::get('/dashboard', [SystemController::class, 'index'])->name('dashboard');
+
+        // Team switching route (for authenticated users)
+        Route::post('team/switch', [App\Http\Controllers\Auth\TeamSelectionController::class, 'switch'])->name('team.switch');
 
         // Two-Factor Authentication Setup Routes
         Route::group(['prefix' => 'two-factor', 'as' => 'two-factor.'], function () {

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * @mixin IdeHelperUser
@@ -132,5 +133,49 @@ class User extends Authenticatable
     public function assignedBugs(): HasMany
     {
         return $this->hasMany(Bug::class, 'assignee_id');
+    }
+
+    /**
+     * Teams that the user belongs to.
+     */
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'user_teams')
+            ->withPivot(['role', 'is_active'])
+            ->withTimestamps()
+            ->wherePivot('is_active', true);
+    }
+
+    /**
+     * Get teams where user is landlord (through tenant ownership).
+     */
+    public function landlordTeams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'user_teams')
+            ->withPivot(['role', 'is_active'])
+            ->withTimestamps()
+            ->wherePivot('role', 'landlord')
+            ->wherePivot('is_active', true);
+    }
+
+    /**
+     * Check if user is landlord of any tenant.
+     */
+    public function isLandlord(): bool
+    {
+        return $this->landlordTeams()->exists();
+    }
+
+    /**
+     * Get all tenants this user has access to (through teams).
+     */
+    public function accessibleTenants()
+    {
+        return Tenant::whereHas('teams', function ($query) {
+            $query->whereHas('users', function ($userQuery) {
+                $userQuery->where('users.id', $this->id)
+                    ->where('user_teams.is_active', true);
+            });
+        });
     }
 }

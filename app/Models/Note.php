@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\TenantAware;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -11,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class Note extends Model
 {
+    use TenantAware;
+
     /**
      * The attributes that are mass assignable.
      */

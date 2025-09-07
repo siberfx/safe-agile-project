@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('business_goal_id')->nullable()->constrained('business_goals')->onDelete('set null');
             $table->foreignId('feature_id')->nullable()->constrained('features')->onDelete('set null');
             $table->foreignId('user_story_id')->nullable()->constrained('tasks')->onDelete('set null');
-            $table->foreignId('tester_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->unsignedBigInteger('tester_id')->nullable();
             $table->timestamp('test_date')->nullable();
             $table->timestamps();
         });

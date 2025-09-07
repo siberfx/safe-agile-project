@@ -20,8 +20,8 @@ return new class extends Migration
             $table->foreignId('user_story_id')->nullable()->constrained('tasks')->onDelete('set null');
             $table->foreignId('feature_id')->nullable()->constrained('features')->onDelete('set null');
             $table->foreignId('sprint_id')->nullable()->constrained('sprints')->onDelete('set null');
-            $table->foreignId('reporter_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('assignee_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->unsignedBigInteger('reporter_id')->nullable();
+            $table->unsignedBigInteger('assignee_id')->nullable();
             $table->text('steps_to_reproduce')->nullable();
             $table->text('expected_behavior')->nullable();
             $table->text('actual_behavior')->nullable();

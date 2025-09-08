@@ -335,17 +335,20 @@
                     </div>
                 </div>
                 
-                <!-- Modal Footer -->
-                <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                    <button type="button" id="cancel-add-task" 
-                            class="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium ">
-                        Cancel
-                    </button>
-                    <button type="submit" 
-                            class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 font-medium transition-all duration-200 shadow-lg hover:shadow-xl">
-                        <i class="fas fa-plus mr-2"></i>
-                        Add Task
-                    </button>
+                <!-- Bottom Action Buttons -->
+                <div class="pt-6">
+                    <div class="flex space-x-3">
+                        <button type="button" id="cancel-add-task" 
+                                class="flex-1 bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+                            <i class="fas fa-times mr-2"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                class="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Task
+                        </button>
+                    </div>
                 </div>
         </form>
     </div>

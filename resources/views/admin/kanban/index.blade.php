@@ -230,20 +230,19 @@
     <div id="task-panel-overlay" class="fixed inset-0 bg-black/30 hidden z-40 cursor-pointer"></div>
 </div>
 
-<!-- Add Task Modal -->
-<div id="add-task-modal" class="fixed inset-0 bg-black/30 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <!-- Modal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold text-gray-900">Add New Task</h3>
-                <button id="close-modal" class="text-gray-400 hover:text-gray-600 ">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
+<!-- Add Task Panel -->
+<div id="add-task-panel" class="fixed top-0 right-0 h-full w-full sm:w-1/2 lg:w-1/3 min-w-[400px] max-w-[600px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 border-l border-gray-200 hidden">
+    <div class="h-full overflow-y-auto">
+        <!-- Panel Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+            <h3 class="text-xl font-semibold text-gray-900">Add New Task</h3>
+            <button id="close-add-panel" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
             
-            <!-- Modal Body -->
-            <form id="add-task-form" class="p-6">
+        <!-- Panel Body -->
+        <form id="add-task-form" class="p-6">
                 <div class="space-y-6">
                     <!-- Title -->
                     <div>
@@ -348,8 +347,7 @@
                         Add Task
                     </button>
                 </div>
-            </form>
-        </div>
+        </form>
     </div>
 </div>
 @endsection
@@ -421,7 +419,7 @@
         }
 
         /* Modal performance */
-        #edit-task-modal, #add-task-modal {
+        #edit-task-modal, #add-task-panel {
             transform: translateZ(0);
             backface-visibility: hidden;
             perspective: 1000px;
@@ -534,7 +532,7 @@ class KanbanBoard {
         const addTaskBtn = document.getElementById('add-task-btn');
         if (addTaskBtn && !addTaskBtn.hasAttribute('data-listener-added')) {
             addTaskBtn.addEventListener('click', () => {
-                document.getElementById('add-task-modal').classList.remove('hidden');
+                this.openAddTaskPanel();
                 this.resetModal();
             });
             addTaskBtn.setAttribute('data-listener-added', 'true');
@@ -593,15 +591,33 @@ class KanbanBoard {
         this.eventListenersSetup = true;
 
         // Modal backdrop click
-        const addTaskModal = document.getElementById('add-task-modal');
-        if (addTaskModal && !addTaskModal.hasAttribute('data-listener-added')) {
-            addTaskModal.addEventListener('click', (e) => {
-                if (e.target.id === 'add-task-modal') {
-                    this.closeModal();
-                }
+        // Add task panel close button
+        const closeAddPanelBtn = document.getElementById('close-add-panel');
+        if (closeAddPanelBtn && !closeAddPanelBtn.hasAttribute('data-listener-added')) {
+            closeAddPanelBtn.addEventListener('click', () => {
+                this.closeAddTaskPanel();
             });
-            addTaskModal.setAttribute('data-listener-added', 'true');
+            closeAddPanelBtn.setAttribute('data-listener-added', 'true');
         }
+
+        // Add task panel overlay click
+        const addTaskOverlay = document.getElementById('task-panel-overlay');
+        if (addTaskOverlay && !addTaskOverlay.hasAttribute('data-listener-added')) {
+            addTaskOverlay.addEventListener('click', () => {
+                this.closeAddTaskPanel();
+            });
+            addTaskOverlay.setAttribute('data-listener-added', 'true');
+        }
+
+        // Add task panel escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const addPanel = document.getElementById('add-task-panel');
+                if (addPanel && !addPanel.classList.contains('hidden') && !addPanel.classList.contains('translate-x-full')) {
+                    this.closeAddTaskPanel();
+                }
+            }
+        });
 
         // Setup drag and drop using event delegation (only once)
         if (!this.dragDropSetup) {
@@ -899,48 +915,43 @@ class KanbanBoard {
         div.innerHTML = `
             <!-- Task Header -->
             <div class="flex items-start justify-between mb-3">
-                <h4 class="font-medium text-gray-900 text-sm leading-tight flex-1 mr-2">${this.escapeHtml(task.title)}</h4>
+                <h4 class="font-semibold text-gray-900 text-sm leading-tight flex-1 mr-2">${this.escapeHtml(task.title)}</h4>
                 <div class="flex items-center space-x-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${priorityColor}">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${priorityColor}">
                         <i class="${priorityIcon[task.priority] || 'fas fa-minus'} mr-1"></i>
                         ${task.priority}
                     </span>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="kanbanBoard.editTask(${task.id})" class="text-gray-400 hover:text-blue-600 p-1 ">
-                            <i class="fas fa-edit text-xs"></i>
-                        </button>
-                        <button onclick="kanbanBoard.deleteTask(${task.id})" class="text-gray-400 hover:text-red-600 p-1 ">
-                            <i class="fas fa-trash text-xs"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
             
             <!-- Task Description -->
-            ${task.description ? `<p class="text-gray-600 text-sm mb-3 line-clamp-2">${this.escapeHtml(task.description)}</p>` : ''}
+            ${task.description ? `<p class="text-gray-600 text-xs mb-3 line-clamp-2 leading-relaxed">${this.escapeHtml(task.description)}</p>` : ''}
             
             <!-- Task Meta -->
             <div class="space-y-2">
-                <!-- Assignee -->
-                ${task.assignee ? `
-                    <div class="flex items-center space-x-2">
-                        <div class="w-6 h-6 rounded-full ${getAvatarColor(task.assignee)} flex items-center justify-center text-white text-xs font-medium">
-                            ${getInitials(task.assignee)}
+                <!-- Assignee & Story Points -->
+                <div class="flex items-center justify-between">
+                    ${task.assignee ? `
+                        <div class="flex items-center space-x-2">
+                            <div class="w-6 h-6 rounded-full ${getAvatarColor(task.assignee)} flex items-center justify-center text-white text-xs font-medium">
+                                ${getInitials(task.assignee)}
+                            </div>
+                            <span class="text-xs text-gray-600 font-medium">${this.escapeHtml(task.assignee)}</span>
                         </div>
-                        <span class="text-xs text-gray-600">${this.escapeHtml(task.assignee)}</span>
-                    </div>
-                ` : `
-                    <button onclick="kanbanBoard.assignTask(${task.id})" class="flex items-center space-x-2 text-gray-400 hover:text-blue-600 text-xs">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Assign</span>
-                    </button>
-                `}
+                    ` : `
+                        <button onclick="kanbanBoard.assignTask(${task.id})" class="flex items-center space-x-1 text-gray-400 hover:text-blue-600 text-xs">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Assign</span>
+                        </button>
+                    `}
+                    
+                    ${task.story_points ? `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">${task.story_points} pts</span>` : ''}
+                </div>
                 
-                <!-- Story Points & Tags -->
+                <!-- Tags & Due Date -->
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-1">
-                        ${task.story_points ? `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${task.story_points} pts</span>` : ''}
-                        ${task.tags && task.tags.length > 0 ? task.tags.slice(0, 2).map(tag => `<span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">${this.escapeHtml(tag)}</span>`).join('') : ''}
+                        ${task.tags && task.tags.length > 0 ? task.tags.slice(0, 2).map(tag => `<span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">${this.escapeHtml(tag)}</span>`).join('') : ''}
                         ${task.tags && task.tags.length > 2 ? `<span class="text-gray-500 text-xs">+${task.tags.length - 2}</span>` : ''}
                     </div>
                     ${task.due_date ? `
@@ -950,6 +961,7 @@ class KanbanBoard {
                         </span>
                     ` : ''}
                 </div>
+                
             </div>
         `;
 
@@ -1451,11 +1463,49 @@ class KanbanBoard {
         document.getElementById('tag-input').value = '';
     }
 
-    closeModal() {
-        const modal = document.getElementById('add-task-modal');
-        if (modal) {
-            modal.classList.add('hidden');
+    openAddTaskPanel() {
+        const panel = document.getElementById('add-task-panel');
+        const overlay = document.getElementById('task-panel-overlay');
+        
+        if (panel && overlay) {
+            // Show overlay
+            overlay.classList.remove('hidden');
+            
+            // Show panel
+            panel.classList.remove('hidden');
+            // Trigger reflow to ensure the element is visible before animating
+            panel.offsetHeight;
+            panel.classList.remove('translate-x-full');
+            panel.classList.add('translate-x-0');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
         }
+    }
+
+    closeAddTaskPanel() {
+        const panel = document.getElementById('add-task-panel');
+        const overlay = document.getElementById('task-panel-overlay');
+        
+        if (panel && overlay) {
+            // Slide out panel
+            panel.classList.remove('translate-x-0');
+            panel.classList.add('translate-x-full');
+            
+            // Hide overlay
+            overlay.classList.add('hidden');
+            
+            // Restore body scroll
+            document.body.style.overflow = '';
+            
+            setTimeout(() => {
+                panel.classList.add('hidden');
+            }, 300);
+        }
+    }
+
+    closeModal() {
+        this.closeAddTaskPanel();
         this.resetModal();
     }
 
@@ -1543,6 +1593,278 @@ class KanbanBoard {
     }
 
     // Edit Task
+    editTaskInDetails(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) {
+            console.error('Task not found:', taskId);
+            return;
+        }
+
+        // Replace task detail content with edit form
+        this.loadEditTaskContent(task);
+    }
+
+    loadEditTaskContent(task) {
+        const contentDiv = document.getElementById('task-detail-content');
+        if (!contentDiv) return;
+
+        // Create minimal edit form HTML
+        const editFormHTML = `
+            <!-- Edit Form (Minimal Design) -->
+            <form id="edit-task-in-details-form">
+                <div class="space-y-6">
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Task Title *</label>
+                        <input type="text" id="edit-title-details" required value="${this.escapeHtml(task.title)}"
+                               class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30"
+                               placeholder="Enter task title">
+                    </div>
+
+                    <!-- Description -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <textarea id="edit-description-details" rows="4" 
+                                  class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 resize-none"
+                                  placeholder="Describe the task in detail">${this.escapeHtml(task.description || '')}</textarea>
+                    </div>
+
+                    <!-- Priority and Status -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+                            <select id="edit-priority-details" required 
+                                    class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
+                                <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                                <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                            <select id="edit-status-details" 
+                                    class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                <option value="todo" ${(task.kanban_status || task.status) === 'todo' ? 'selected' : ''}>To Do</option>
+                                <option value="in_progress" ${(task.kanban_status || task.status) === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="review" ${(task.kanban_status || task.status) === 'review' ? 'selected' : ''}>Review</option>
+                                <option value="done" ${(task.kanban_status || task.status) === 'done' ? 'selected' : ''}>Done</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Assignee and Story Points -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
+                            <select id="edit-assignee-details" 
+                                    class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                                <option value="">Select Assignee</option>
+                                ${this.users.map(user => 
+                                    `<option value="${user.id}" ${user.id == task.assigned_to ? 'selected' : ''}>${this.escapeHtml(user.name)}</option>`
+                                ).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Story Points</label>
+                            <input type="number" id="edit-story-points-details" min="0" max="100" value="${task.story_points || ''}"
+                                   class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30"
+                                   placeholder="0">
+                        </div>
+                    </div>
+
+                    <!-- Due Date -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                        <input type="date" id="edit-due-date-details" value="${task.due_date || ''}"
+                               class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30">
+                    </div>
+
+                    <!-- Tags -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                        <div class="flex flex-wrap gap-2 mb-2" id="edit-tags-container-details">
+                            ${(task.tags || []).map(tag => `
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
+                                    ${this.escapeHtml(tag)}
+                                    <button type="button" onclick="this.parentElement.remove()" class="ml-2 text-gray-500 hover:text-gray-700">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                </span>
+                            `).join('')}
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="edit-tag-input-details" 
+                                   class="flex-1 px-4 py-2 outline-none rounded-lg bg-white border border-primary/30"
+                                   placeholder="Add a tag and press Enter">
+                            <button type="button" id="edit-add-tag-btn-details" 
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                        <textarea id="edit-notes-details" rows="3" 
+                                  class="w-full px-4 py-3 outline-none rounded-lg bg-white border border-primary/30 resize-none"
+                                  placeholder="Additional notes or comments">${this.escapeHtml(task.notes || '')}</textarea>
+                    </div>
+                </div>
+                
+                <!-- Bottom Action Buttons -->
+                <div class="pt-6">
+                    <div class="flex space-x-3">
+                        <button type="button" id="back-to-step1" 
+                                class="flex-1 bg-gray-600 text-white px-4 py-3 rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            Back
+                        </button>
+                        <button type="submit" 
+                                class="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                            <i class="fas fa-save mr-2"></i>
+                            Update
+                        </button>
+                    </div>
+                </div>
+            </form>
+        `;
+
+        // Replace content
+        contentDiv.innerHTML = editFormHTML;
+
+        // Setup form functionality
+        this.setupEditTaskInDetailsForm(task.id);
+    }
+
+    setupEditTaskInDetailsForm(taskId) {
+        // Setup tag functionality
+        const editTagInput = document.getElementById('edit-tag-input-details');
+        const editAddTagBtn = document.getElementById('edit-add-tag-btn-details');
+        const editTagsContainer = document.getElementById('edit-tags-container-details');
+
+        const addEditTag = () => {
+            const tagText = editTagInput.value.trim();
+            if (tagText) {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800';
+                tagElement.innerHTML = `
+                    ${this.escapeHtml(tagText)}
+                    <button type="button" onclick="this.parentElement.remove()" class="ml-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+                editTagsContainer.appendChild(tagElement);
+                editTagInput.value = '';
+            }
+        };
+
+        if (editTagInput) {
+            editTagInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addEditTag();
+                }
+            });
+        }
+
+        if (editAddTagBtn) {
+            editAddTagBtn.addEventListener('click', addEditTag);
+        }
+
+        // Setup navigation buttons
+        const backToStep1Btn = document.getElementById('back-to-step1');
+        
+        const closeEditForm = () => {
+            // Reload task details (Step 1)
+            const task = this.tasks.find(t => t.id === taskId);
+            if (task) {
+                this.loadTaskDetailContent(task);
+            }
+        };
+
+        if (backToStep1Btn) {
+            backToStep1Btn.addEventListener('click', closeEditForm);
+        }
+
+        // Setup form submission
+        const form = document.getElementById('edit-task-in-details-form');
+        if (form) {
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Collect tags
+                const tags = Array.from(document.querySelectorAll('#edit-tags-container-details span')).map(span => 
+                    span.textContent.trim().replace('×', '').trim()
+                );
+
+                const formData = {
+                    title: document.getElementById('edit-title-details').value,
+                    description: document.getElementById('edit-description-details').value,
+                    priority: document.getElementById('edit-priority-details').value,
+                    story_points: document.getElementById('edit-story-points-details').value,
+                    kanban_status: document.getElementById('edit-status-details').value,
+                    due_date: document.getElementById('edit-due-date-details').value,
+                    assigned_to: document.getElementById('edit-assignee-details').value,
+                    tags: tags,
+                    notes: document.getElementById('edit-notes-details').value
+                };
+
+                try {
+                    const response = await fetch(`/api/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (response.ok) {
+                        const updatedTask = await response.json();
+                        
+                        // Update local task data
+                        const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+                        if (taskIndex !== -1) {
+                            this.tasks[taskIndex] = updatedTask.data;
+                        }
+                        
+                        // Update filtered tasks data as well
+                        const filteredIndex = this.filteredTasks.findIndex(t => t.id === taskId);
+                        if (filteredIndex !== -1) {
+                            this.filteredTasks[filteredIndex] = updatedTask.data;
+                        }
+                        
+                        // Re-render Kanban Board to show updated task
+                        this.renderTasks();
+                        this.loadStats();
+                        
+                        // Reload task details with updated data
+                        this.loadTaskDetailContent(updatedTask.data);
+                        
+                        // Show success message
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Task updated successfully!',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        throw new Error('Failed to update task');
+                    }
+                } catch (error) {
+                    console.error('Error updating task:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'Failed to update task. Please try again.',
+                    });
+                }
+            });
+        }
+    }
+
     async editTask(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
@@ -1553,19 +1875,18 @@ class KanbanBoard {
 
         // Create edit modal HTML
         const editModalHTML = `
-            <div id="edit-task-modal" class="fixed inset-0 bg-black/30 z-50" style="will-change: auto;">
-                <div class="flex items-center justify-center min-h-screen p-4">
-                    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style="will-change: auto;">
-                        <!-- Modal Header -->
-                        <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                            <h3 class="text-xl font-semibold text-gray-900">Edit Task</h3>
-                            <button onclick="document.getElementById('edit-task-modal').remove()" class="text-gray-400 hover:text-gray-600">
-                                <i class="fas fa-times text-xl"></i>
-                            </button>
-                        </div>
+            <div id="edit-task-panel" class="fixed top-0 right-0 h-full w-full sm:w-1/2 lg:w-1/3 min-w-[400px] max-w-[600px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 border-l border-gray-200" style="will-change: auto;">
+                <div class="h-full overflow-y-auto">
+                    <!-- Panel Header -->
+                    <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-xl font-semibold text-gray-900">Edit Task</h3>
+                        <button id="close-edit-panel" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
                         
-                        <!-- Modal Body -->
-                        <form id="edit-task-form" class="p-6">
+                    <!-- Panel Body -->
+                    <form id="edit-task-form" class="p-6">
                             <div class="space-y-6">
                                 <!-- Title -->
                                 <div>
@@ -1633,6 +1954,30 @@ class KanbanBoard {
                                     </select>
                                 </div>
                                 
+                                <!-- Tags -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                                    <div class="flex flex-wrap gap-2 mb-2" id="edit-tags-container">
+                                        ${(task.tags || []).map(tag => `
+                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800">
+                                                ${this.escapeHtml(tag)}
+                                                <button type="button" onclick="this.parentElement.remove()" class="ml-2 text-gray-500 hover:text-gray-700">
+                                                    <i class="fas fa-times text-xs"></i>
+                                                </button>
+                                            </span>
+                                        `).join('')}
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="edit-tag-input" 
+                                               class="flex-1 px-4 py-2 outline-none rounded-lg bg-white border border-primary/30"
+                                               placeholder="Add a tag and press Enter">
+                                        <button type="button" id="edit-add-tag-btn" 
+                                                class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
                                 <!-- Notes -->
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
@@ -1644,7 +1989,7 @@ class KanbanBoard {
                             
                             <!-- Modal Footer -->
                             <div class="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                                <button type="button" onclick="document.getElementById('edit-task-modal').remove()" 
+                                <button type="button" id="cancel-edit-task" 
                                         class="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium">
                                     Cancel
                                 </button>
@@ -1654,19 +1999,102 @@ class KanbanBoard {
                                     Update Task
                                 </button>
                             </div>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             </div>
         `;
 
-        // Add modal to body
+        // Add panel to body
         document.body.insertAdjacentHTML('beforeend', editModalHTML);
+        
+        // Show panel with animation
+        const panel = document.getElementById('edit-task-panel');
+        const overlay = document.getElementById('task-panel-overlay');
+        
+        if (panel && overlay) {
+            // Show overlay
+            overlay.classList.remove('hidden');
+            
+            // Show panel
+            panel.classList.remove('translate-x-full');
+            panel.classList.add('translate-x-0');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Setup tag functionality
+        const editTagInput = document.getElementById('edit-tag-input');
+        const editAddTagBtn = document.getElementById('edit-add-tag-btn');
+        const editTagsContainer = document.getElementById('edit-tags-container');
+
+        const addEditTag = () => {
+            const tagText = editTagInput.value.trim();
+            if (tagText) {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-800';
+                tagElement.innerHTML = `
+                    ${this.escapeHtml(tagText)}
+                    <button type="button" onclick="this.parentElement.remove()" class="ml-2 text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xs"></i>
+                    </button>
+                `;
+                editTagsContainer.appendChild(tagElement);
+                editTagInput.value = '';
+            }
+        };
+
+        editTagInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addEditTag();
+            }
+        });
+
+        editAddTagBtn.addEventListener('click', addEditTag);
+
+        // Setup close button
+        const closeEditPanelBtn = document.getElementById('close-edit-panel');
+        const cancelEditBtn = document.getElementById('cancel-edit-task');
+        
+        const closeEditPanel = () => {
+            const panel = document.getElementById('edit-task-panel');
+            const overlay = document.getElementById('task-panel-overlay');
+            
+            if (panel && overlay) {
+                // Slide out panel
+                panel.classList.remove('translate-x-0');
+                panel.classList.add('translate-x-full');
+                
+                // Hide overlay
+                overlay.classList.add('hidden');
+                
+                // Restore body scroll
+                document.body.style.overflow = '';
+                
+                setTimeout(() => {
+                    panel.remove();
+                }, 300);
+            }
+        };
+
+        if (closeEditPanelBtn) {
+            closeEditPanelBtn.addEventListener('click', closeEditPanel);
+        }
+        
+        if (cancelEditBtn) {
+            cancelEditBtn.addEventListener('click', closeEditPanel);
+        }
 
         // Setup form submission
         document.getElementById('edit-task-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Collect tags
+            const tags = Array.from(document.querySelectorAll('#edit-tags-container span')).map(span => 
+                span.textContent.trim().replace('×', '').trim()
+            );
+
             const formData = {
                 title: document.getElementById('edit-title').value,
                 description: document.getElementById('edit-description').value,
@@ -1675,6 +2103,7 @@ class KanbanBoard {
                 kanban_status: document.getElementById('edit-status').value,
                 due_date: document.getElementById('edit-due-date').value,
                 assigned_to: document.getElementById('edit-assignee').value,
+                tags: tags,
                 notes: document.getElementById('edit-notes').value
             };
 
@@ -1713,7 +2142,7 @@ class KanbanBoard {
                     }
                     
                     // Close modal
-                    document.getElementById('edit-task-modal').remove();
+                    closeEditPanel();
                     
                     // Show success message
                     Swal.fire({
@@ -1741,9 +2170,21 @@ class KanbanBoard {
         });
 
         // Setup backdrop click
-        document.getElementById('edit-task-modal').addEventListener('click', (e) => {
-            if (e.target.id === 'edit-task-modal') {
-                document.getElementById('edit-task-modal').remove();
+        // Edit task panel overlay click
+        const editTaskOverlay = document.getElementById('task-panel-overlay');
+        if (editTaskOverlay) {
+            editTaskOverlay.addEventListener('click', () => {
+                closeEditPanel();
+            });
+        }
+
+        // Edit task panel escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const editPanel = document.getElementById('edit-task-panel');
+                if (editPanel && !editPanel.classList.contains('translate-x-full')) {
+                    closeEditPanel();
+                }
             }
         });
     }
@@ -1956,22 +2397,39 @@ class KanbanBoard {
         document.body.style.overflow = '';
     }
 
-    loadTaskDetailContent(task) {
-        console.log('Loading task detail for:', task);
-        const content = document.getElementById('task-detail-content');
-        
-        const priorityColors = {
+    // Helper functions
+    capitalizeFirst(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    getPriorityColor(priority) {
+        const colors = {
             'high': 'bg-red-100 text-red-800 border-red-200',
             'medium': 'bg-primary/10 text-primary border-primary/20',
             'low': 'bg-green-100 text-green-800 border-green-200'
         };
+        return colors[priority] || 'bg-gray-100 text-gray-800';
+    }
 
-        const statusColors = {
+    getStatusColor(status) {
+        const colors = {
             'todo': 'bg-gray-100 text-gray-800',
             'in_progress': 'bg-yellow-100 text-yellow-800',
             'review': 'bg-purple-100 text-purple-800',
             'done': 'bg-green-100 text-green-800'
         };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+    }
+
+    getStatusText(status) {
+        if (!status) return '';
+        return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    loadTaskDetailContent(task) {
+        console.log('Loading task detail for:', task);
+        const content = document.getElementById('task-detail-content');
 
         const getInitials = (name) => {
             if (!name) return '?';
@@ -1986,19 +2444,22 @@ class KanbanBoard {
         };
 
         content.innerHTML = `
-            <div class="space-y-6">
+            <div class="p-2 space-y-6">
                 <!-- Task Header -->
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <h2 class="text-xl font-bold text-gray-900 mb-2">${this.escapeHtml(task.title)}</h2>
-                        <div class="flex items-center space-x-2">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${priorityColors[task.priority] || 'bg-gray-100 text-gray-800'}">
-                                <i class="fas fa-flag mr-1"></i>
-                                ${task.priority}
-                            </span>
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColors[task.status] || 'bg-gray-100 text-gray-800'}">
-                                ${(task.status || '').replace('_', ' ')}
-                            </span>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">${this.escapeHtml(task.title)}</h2>
+                            <div class="flex items-center space-x-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${this.getPriorityColor(task.priority)}">
+                                    <i class="fas fa-flag mr-1"></i>
+                                    ${this.capitalizeFirst(task.priority)}
+                                </span>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${this.getStatusColor(task.status)}">
+                                    <i class="fas fa-circle mr-1"></i>
+                                    ${this.getStatusText(task.status)}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2011,12 +2472,15 @@ class KanbanBoard {
                 </div>
                 ` : ''}
 
-                <!-- Task Meta -->
-                <div class="space-y-4">
+                <!-- Task Details Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Assignee -->
                     ${task.assignee ? `
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Assignee</h3>
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-user text-gray-400 mr-2"></i>
+                            <span class="text-sm font-medium text-gray-700">Assignee</span>
+                        </div>
                         <div class="flex items-center space-x-3">
                             <div class="w-8 h-8 ${getAvatarColor(task.assignee || '')} rounded-full flex items-center justify-center text-white text-sm font-medium">
                                 ${getInitials(task.assignee || '')}
@@ -2028,8 +2492,11 @@ class KanbanBoard {
 
                     <!-- Story Points -->
                     ${task.story_points ? `
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Story Points</h3>
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-star text-gray-400 mr-2"></i>
+                            <span class="text-sm font-medium text-gray-700">Story Points</span>
+                        </div>
                         <span class="inline-flex items-center px-3 py-1 rounded-lg bg-blue-100 text-blue-800 text-sm font-medium">
                             <i class="fas fa-chart-bar mr-1"></i>
                             ${task.story_points}
@@ -2039,8 +2506,11 @@ class KanbanBoard {
 
                     <!-- Due Date -->
                     ${task.due_date ? `
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Due Date</h3>
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-calendar text-gray-400 mr-2"></i>
+                            <span class="text-sm font-medium text-gray-700">Due Date</span>
+                        </div>
                         <span class="inline-flex items-center px-3 py-1 rounded-lg bg-gray-100 text-gray-800 text-sm font-medium">
                             <i class="fas fa-calendar mr-1"></i>
                             ${task.due_date ? new Date(task.due_date).toLocaleDateString() : ''}
@@ -2050,11 +2520,14 @@ class KanbanBoard {
 
                     <!-- Tags -->
                     ${task.tags && Array.isArray(task.tags) && task.tags.length > 0 ? `
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Tags</h3>
+                    <div class="bg-white rounded-lg border border-gray-200 p-4">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-tags text-gray-400 mr-2"></i>
+                            <span class="text-sm font-medium text-gray-700">Tags</span>
+                        </div>
                         <div class="flex flex-wrap gap-2">
                             ${task.tags.map(tag => `
-                                <span class="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs font-medium">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
                                     ${this.escapeHtml(tag || '')}
                                 </span>
                             `).join('')}
@@ -2065,8 +2538,11 @@ class KanbanBoard {
 
                 <!-- Notes Section -->
                 <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-semibold text-gray-700">Notes</h3>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center">
+                            <i class="fas fa-sticky-note text-gray-400 mr-2"></i>
+                            <span class="text-sm font-medium text-gray-700">Notes</span>
+                        </div>
                         <button onclick="kanbanBoard.addTaskNote(${task.id})" class="text-primary hover:text-primary/80 text-sm font-medium">
                             <i class="fas fa-plus mr-1"></i>
                             Add Note
@@ -2092,13 +2568,13 @@ class KanbanBoard {
                 </div>
 
                 <!-- Actions -->
-                <div class="pt-4 border-t border-gray-200">
+                <div class="pt-6">
                     <div class="flex space-x-3">
-                        <button onclick="kanbanBoard.editTask(${task.id})" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                        <button onclick="kanbanBoard.editTaskInDetails(${task.id})" class="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
                             <i class="fas fa-edit mr-2"></i>
                             Edit Task
                         </button>
-                        <button onclick="kanbanBoard.deleteTask(${task.id})" class="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                        <button onclick="kanbanBoard.deleteTask(${task.id})" class="flex-1 bg-red-600 text-white px-4 py-3 rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
                             <i class="fas fa-trash mr-2"></i>
                             Delete
                         </button>
@@ -2198,25 +2674,25 @@ class KanbanBoard {
                     
                     notesContainer.appendChild(noteElement);
                     
-                    // Update task data
-                    const task = this.tasks.find(t => t.id === taskId);
-                    if (task) {
-                        // Initialize notes_list if it doesn't exist
-                        if (!task.notes_list) {
-                            task.notes_list = [];
+                        // Update task data
+                        const task = this.tasks.find(t => t.id === taskId);
+                        if (task) {
+                            // Initialize notes_list if it doesn't exist
+                            if (!task.notes_list) {
+                                task.notes_list = [];
+                            }
+                            
+                            // Add new note to the notes_list array
+                            task.notes_list.push({
+                                id: result.data.id,
+                                body: noteText,
+                                user_name: result.data.user_name,
+                                created_at: result.data.created_at
+                            });
+                            
+                            // Update the single notes field
+                            task.notes = noteText;
                         }
-                        
-                        // Add new note to the notes_list array
-                        task.notes_list.push({
-                            id: result.data.id,
-                            body: noteText,
-                            user_name: result.data.user_name,
-                            created_at: result.data.created_at
-                        });
-                        
-                        // Update the single notes field as well
-                        task.notes = noteText;
-                    }
                     
                     // Close modal
                     document.getElementById('add-note-modal').remove();
@@ -2247,6 +2723,7 @@ class KanbanBoard {
             document.getElementById('note-text').focus();
         }, 100);
     }
+
 }
 
 // Global variable for Kanban Board

@@ -163,11 +163,11 @@ Route::group(['as' => 'admin.'], function () {
             Route::get('/reports/kpi', [SystemController::class, 'kpiDashboard'])->name('reports.kpi');
         });
 
-    }); // End of protected admin routes
+        // API Routes for Notes
+        Route::post('/admin/api/notes', [App\Http\Controllers\Api\NoteController::class, 'store'])->name('api.notes.store');
+        Route::delete('/admin/api/notes/{note}', [App\Http\Controllers\Api\NoteController::class, 'destroy'])->name('api.notes.destroy');
 
-    // API Routes for Notes
-    Route::post('/admin/api/notes', [App\Http\Controllers\Api\NoteController::class, 'store'])->name('api.notes.store');
-    Route::delete('/admin/api/notes/{note}', [App\Http\Controllers\Api\NoteController::class, 'destroy'])->name('api.notes.destroy');
+    }); // End of protected admin routes
 
     // Admin fallback route - redirect non-existent admin routes to login
     Route::fallback(function () {
